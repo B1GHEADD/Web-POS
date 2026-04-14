@@ -6,6 +6,9 @@
       <div
         class="bg-[#fffbf7] rounded-2xl p-4 md:p-5 shadow-sm border border-[#f0ce97] border-opacity-40 flex flex-col md:flex-row gap-4 md:gap-6"
       >
+        <!-- ========================================== -->
+        <!-- SISI KIRI: INPUT BAHAN BAKU (MASUK) -->
+        <!-- ========================================== -->
         <div class="flex-1">
           <h2
             class="text-base md:text-lg font-bold text-[#4a2f1d] mb-3 border-b border-[#e5b976] pb-2"
@@ -36,20 +39,13 @@
                 class="w-full bg-white border border-[#e5b976] text-[#4a2f1d] rounded-lg px-3 py-1.5 focus:outline-none focus:ring-1 focus:ring-[#8b5a33] text-sm"
               >
                 <option value="" disabled selected>Pilih Bahan</option>
-                <option>Biji Kopi Arabika</option>
-                <option>Biji Kopi Robusta</option>
-                <option>Susu UHT Fresh Milk</option>
-                <option>Susu Oat (Oatmilk)</option>
-                <option>Gula Aren Cair</option>
-                <option>Gula Putih Cair</option>
-                <option>Sirup Vanilla</option>
-                <option>Sirup Caramel</option>
-                <option>Sirup Butterscotch</option>
-                <option>Sirup Hazelnut</option>
-                <option>Bubuk Matcha</option>
-                <option>Bubuk Coklat</option>
-                <option>Gelas Cup Plastik (Ice)</option>
-                <option>Gelas Cup Kertas (Hot)</option>
+                <option
+                  v-for="(bahan, index) in listBahan"
+                  :key="index"
+                  :value="bahan.nama_bahan"
+                >
+                  {{ bahan.nama_bahan }}
+                </option>
               </select>
             </div>
 
@@ -71,8 +67,8 @@
                 >
                   <option value="" disabled>Pilih</option>
                   <option>ml</option>
-                  <option>gram</option>
-                  <option>pcs</option>
+                  <option>Gram</option>
+                  <option>Pcs</option>
                 </select>
               </div>
             </div>
@@ -114,8 +110,12 @@
           </div>
         </div>
 
+        <!-- Garis Pemisah -->
         <div class="hidden md:block w-px bg-[#e5b976] opacity-50"></div>
 
+        <!-- ========================================== -->
+        <!-- SISI KANAN: PRODUKSI KOPI (RESEP) -->
+        <!-- ========================================== -->
         <div class="flex-1">
           <h2
             class="text-base md:text-lg font-bold text-[#4a2f1d] mb-3 border-b border-[#e5b976] pb-2"
@@ -156,16 +156,13 @@
                 class="w-48 bg-white border border-[#e5b976] text-[#4a2f1d] rounded-lg px-3 py-1.5 focus:outline-none focus:ring-1 focus:ring-[#8b5a33] text-sm"
               >
                 <option value="" disabled selected>Pilih Menu</option>
-                <option>Espresso Hot</option>
-                <option>Americano Ice</option>
-                <option>Kopi Susu Gula Aren</option>
-                <option>Vanilla Latte Ice</option>
-                <option>Caramel Macchiato Ice</option>
-                <option>Butterscotch Coffee Ice</option>
-                <option>Hazelnut Latte Hot</option>
-                <option>Oatmilk Kopi Susu</option>
-                <option>Matcha Latte Ice</option>
-                <option>Classic Chocolate Ice</option>
+                <option
+                  v-for="(menu, index) in listMenu"
+                  :key="index"
+                  :value="menu.nama_produk"
+                >
+                  {{ menu.nama_produk }}
+                </option>
               </select>
             </div>
 
@@ -214,26 +211,44 @@
 </template>
 
 <script setup>
-import { ref, computed } from "vue";
+import { ref, computed, onMounted } from "vue";
+
+// --- FUNGSI AMBIL TANGGAL LOKAL (ANTI UTC BUG) ---
+const getTanggalLokal = () => {
+  const tgl = new Date();
+  const tahun = tgl.getFullYear();
+  const bulan = String(tgl.getMonth() + 1).padStart(2, "0");
+  const hari = String(tgl.getDate()).padStart(2, "0");
+  return `${tahun}-${bulan}-${hari}`;
+};
 
 // ==========================================
 // 1. DATA REAKTIF SISI KIRI (RESTOCK BAHAN)
 // ==========================================
-const tanggalInputBahan = ref("");
+// Memanggil fungsi getTanggalLokal() sebagai nilai awal
+const tanggalInputBahan = ref(getTanggalLokal());
 const namaBahanMasuk = ref("");
 const jumlahBahanMasuk = ref(null);
 const satuanBahanMasuk = ref("");
 const hargaBahanMasuk = ref(null);
+// Tanggal expired dikosongkan karena input manual masa depan
 const expiredBahanMasuk = ref("");
 const isRestockLoading = ref(false);
+
+// Penampung data bahan dinamis
+const listBahan = ref([]);
 
 // ==========================================
 // 2. DATA REAKTIF SISI KANAN (PRODUKSI KOPI)
 // ==========================================
-const tanggalProduksi = ref("");
+// Memanggil fungsi getTanggalLokal() sebagai nilai awal
+const tanggalProduksi = ref(getTanggalLokal());
 const menuDibuat = ref("");
 const jumlahProduksi = ref(null);
 const isProduksiLoading = ref(false);
+
+// Penampung data menu dinamis
+const listMenu = ref([]);
 
 // --- LOGIKA TANGGAL EXPIRED PRODUKSI (+3 HARI) ---
 const tanggalExpired = computed(() => {
@@ -245,6 +260,29 @@ const tanggalExpired = computed(() => {
   const day = String(tgl.getDate()).padStart(2, "0");
   return `${year}-${month}-${day}`;
 });
+
+// ==========================================
+// FUNGSI TARIK DATA DARI BACKEND
+// ==========================================
+const ambilDataMenu = async () => {
+  try {
+    const res = await fetch("http://localhost:3000/list-menu-produksi");
+    const data = await res.json();
+    listMenu.value = data;
+  } catch (err) {
+    console.error("Gagal menarik data menu:", err);
+  }
+};
+
+const ambilDataBahan = async () => {
+  try {
+    const res = await fetch("http://localhost:3000/list-bahan-baku");
+    const data = await res.json();
+    listBahan.value = data;
+  } catch (err) {
+    console.error("Gagal menarik data bahan baku:", err);
+  }
+};
 
 // ==========================================
 // 3. FUNGSI SIMPAN RESTOCK BAHAN BAKU (KIRI)
@@ -346,7 +384,13 @@ const simpanProduksi = async () => {
       menuDibuat.value = "";
       jumlahProduksi.value = null;
     } else {
-      alert(`❌ Gagal: ${hasil.error || "Terjadi kesalahan"}`);
+      if (hasil.detail && hasil.detail.length > 0) {
+        alert(
+          `❌ Gagal: ${hasil.error}\n\nDetail:\n- ${hasil.detail.join("\n- ")}`,
+        );
+      } else {
+        alert(`❌ Gagal: ${hasil.error || "Terjadi kesalahan"}`);
+      }
     }
   } catch (error) {
     console.error("Error saat simpan produksi:", error);
@@ -355,4 +399,12 @@ const simpanProduksi = async () => {
     isProduksiLoading.value = false;
   }
 };
+
+// ==========================================
+// JALANKAN SAAT HALAMAN PERTAMA DIBUKA
+// ==========================================
+onMounted(() => {
+  ambilDataMenu();
+  ambilDataBahan();
+});
 </script>

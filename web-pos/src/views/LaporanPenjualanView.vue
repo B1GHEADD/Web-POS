@@ -1,172 +1,199 @@
 <template>
   <main
-    class="flex-1 flex flex-col p-4 md:p-8 relative overflow-y-auto w-full h-full"
+    class="flex-1 flex flex-col p-4 md:p-6 overflow-y-auto w-full h-full bg-[#fcf9f5]"
   >
-    <div class="max-w-6xl mx-auto w-full space-y-6">
+    <div class="max-w-7xl mx-auto w-full space-y-6">
+      <!-- HEADER LAPORAN -->
       <div
-        class="flex justify-between items-end border-b border-[#e5b976] pb-4"
+        class="flex flex-col md:flex-row justify-between items-start md:items-end border-b border-[#e5b976] pb-4 gap-4"
       >
         <div>
           <h1 class="text-2xl font-bold text-[#4a2f1d]">
-            Laporan Penjualan & Performa
+            Laporan Produksi & Inventaris
           </h1>
           <p class="text-sm text-[#8b5a33] mt-1">
-            Pantau arus kas, tren harian, dan kinerja Rider lapangan
+            Pantau performa penjualan dan rekap transaksi rider
           </p>
         </div>
-        <select
-          class="bg-white border border-[#e5b976] text-[#4a2f1d] rounded-lg px-4 py-2 focus:outline-none focus:ring-1 focus:ring-[#8b5a33] shadow-sm font-medium"
+        <button
+          @click="refreshData"
+          class="bg-white border border-[#e5b976] hover:bg-[#fdf5e6] text-[#8b5a33] px-4 py-2 rounded-lg text-sm font-bold shadow-sm transition-colors flex items-center gap-2"
         >
-          <option>Bulan Ini (2026)</option>
-        </select>
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            class="h-4 w-4"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+            />
+          </svg>
+          Refresh Data
+        </button>
       </div>
 
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <!-- WIDGET ATAS: DIBAGI 2 KOLOM (TOP MENU & KLASEMEN RIDER) -->
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <!-- WIDGET KIRI: TOP 3 MENU TERLARIS -->
         <div
-          class="bg-gradient-to-br from-[#8b5a33] to-[#5c3a21] rounded-3xl p-6 shadow-md text-white flex flex-col justify-center transition-transform hover:-translate-y-1"
-        >
-          <span class="text-sm font-medium opacity-80 mb-1"
-            >Total Pendapatan (Bulan Ini)</span
-          >
-          <span class="text-3xl font-extrabold"
-            >Rp {{ summary.totalPendapatan.toLocaleString("id-ID") }}</span
-          >
-        </div>
-
-        <div
-          class="bg-[#fffbf7] border border-[#f0ce97] border-opacity-60 rounded-3xl p-6 shadow-sm flex flex-col justify-center transition-transform hover:-translate-y-1"
-        >
-          <span class="text-sm font-medium text-[#8b5a33] mb-1"
-            >Total Cup Terjual</span
-          >
-          <span class="text-3xl font-extrabold text-[#4a2f1d]"
-            >{{ summary.totalCup }}
-            <span class="text-base font-semibold">Cup</span></span
-          >
-        </div>
-
-        <div
-          class="bg-[#fffbf7] border border-[#f0ce97] border-opacity-60 rounded-3xl p-6 shadow-sm flex flex-col justify-center transition-transform hover:-translate-y-1"
-        >
-          <span class="text-sm font-medium text-[#8b5a33] mb-1"
-            >Menu Paling Laku Aktual</span
-          >
-          <span class="text-xl font-extrabold text-[#4a2f1d] leading-tight">{{
-            summary.menuJuara
-          }}</span>
-        </div>
-      </div>
-
-      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div
-          class="lg:col-span-2 bg-[#fffbf7] rounded-3xl p-6 shadow-sm border border-[#f0ce97] border-opacity-40"
-        >
-          <h2 class="text-lg font-bold text-[#4a2f1d] mb-4">
-            Tren Pendapatan Harian
-          </h2>
-          <div
-            class="w-full h-72 bg-white rounded-xl border border-[#e5b976] p-4 flex items-center justify-center"
-          >
-            <canvas ref="grafikCanvas"></canvas>
-          </div>
-        </div>
-
-        <div
-          class="bg-[#fffbf7] rounded-3xl p-6 shadow-sm border border-[#f0ce97] border-opacity-40 flex flex-col"
+          class="bg-[#fffbf7] rounded-2xl p-6 shadow-sm border border-[#f0ce97] border-opacity-40 flex flex-col"
         >
           <h2
-            class="text-lg font-bold text-[#4a2f1d] mb-4 border-b border-[#e5b976] pb-2"
+            class="text-lg font-bold text-[#4a2f1d] mb-4 flex items-center gap-2"
           >
-            Top Rider (Penjualan)
+            <span>🏆</span> Top 3 Menu (Bulan Ini)
           </h2>
-          <div class="space-y-3 flex-1 overflow-y-auto">
+          <div class="flex flex-col gap-3 flex-1">
             <div
-              v-for="(rider, index) in leaderboard"
+              v-for="(item, index) in topMenu"
               :key="index"
-              class="flex items-center justify-between p-3 bg-white rounded-xl border border-gray-100 shadow-sm"
+              class="bg-white border border-[#e5b976] rounded-xl p-3 flex items-center gap-4 shadow-sm hover:shadow-md transition-shadow"
             >
-              <div class="flex items-center space-x-3">
-                <div
-                  :class="[
-                    'w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm shadow-inner',
-                    index === 0
-                      ? 'bg-[#c28147] text-white'
-                      : index === 1
-                        ? 'bg-[#e5b976] text-white'
-                        : 'bg-[#f0ce97] text-[#4a2f1d]',
-                  ]"
-                >
-                  {{ index + 1 }}
-                </div>
-                <div>
-                  <span class="font-bold text-[#4a2f1d] block text-sm">{{
-                    rider.nama_rider
-                  }}</span>
-                  <span class="text-xs text-green-600 font-semibold"
-                    >Rp {{ rider.pendapatan.toLocaleString("id-ID") }}</span
-                  >
-                </div>
-              </div>
-              <span class="font-extrabold text-[#8b5a33]"
-                >{{ rider.terjual }}
-                <span class="text-xs font-normal">Cup</span></span
+              <div
+                class="w-10 h-10 rounded-full bg-[#c28147] text-white font-bold flex items-center justify-center text-lg shadow-inner"
               >
+                {{ index + 1 }}
+              </div>
+              <div class="flex-1">
+                <h3
+                  class="font-bold text-[#4a2f1d] truncate"
+                  :title="item.nama_produk"
+                >
+                  {{ item.nama_produk }}
+                </h3>
+                <p class="text-sm text-green-600 font-bold">
+                  {{ item.jumlah }}
+                  <span class="text-xs text-gray-500 font-normal"
+                    >Cup Terjual</span
+                  >
+                </p>
+              </div>
             </div>
-
             <div
-              v-if="leaderboard.length === 0"
-              class="text-center text-sm text-gray-400 italic pt-4"
+              v-if="topMenu.length === 0"
+              class="text-center text-gray-400 text-sm py-4 italic border border-dashed border-[#e5b976] rounded-xl bg-[#fdf5e6] flex-1 flex items-center justify-center"
             >
-              Belum ada data penjualan.
+              Belum ada data penjualan menu.
+            </div>
+          </div>
+        </div>
+
+        <!-- WIDGET KANAN: KLASEMEN RIDER -->
+        <div
+          class="bg-[#fffbf7] rounded-2xl p-6 shadow-sm border border-[#f0ce97] border-opacity-40 flex flex-col"
+        >
+          <h2
+            class="text-lg font-bold text-[#4a2f1d] mb-4 flex items-center gap-2"
+          >
+            <span>🛵</span> Klasemen Rider (Bulan Ini)
+          </h2>
+          <div class="flex flex-col gap-3 flex-1">
+            <div
+              v-for="(rider, index) in klasemenRider"
+              :key="index"
+              class="bg-white border border-[#e5b976] rounded-xl p-3 flex items-center gap-4 shadow-sm hover:shadow-md transition-shadow"
+            >
+              <div
+                class="w-10 h-10 rounded-full bg-[#5c3a21] text-white font-bold flex items-center justify-center text-lg shadow-inner"
+              >
+                {{ index + 1 }}
+              </div>
+              <div class="flex-1">
+                <h3 class="font-bold text-[#4a2f1d]">{{ rider.nama_rider }}</h3>
+                <p class="text-xs text-gray-500 mt-0.5">
+                  <span class="font-bold text-green-600">{{
+                    rider.total_cup
+                  }}</span>
+                  Cup Terjual
+                </p>
+              </div>
+              <div class="text-right">
+                <span class="block text-sm font-extrabold text-[#8b5a33]">{{
+                  formatRupiah(rider.total_omset)
+                }}</span>
+              </div>
+            </div>
+            <div
+              v-if="klasemenRider.length === 0"
+              class="text-center text-gray-400 text-sm py-4 italic border border-dashed border-[#e5b976] rounded-xl bg-[#fdf5e6] flex-1 flex items-center justify-center"
+            >
+              Belum ada data penjualan rider.
             </div>
           </div>
         </div>
       </div>
 
+      <!-- WIDGET BAWAH: REKAP PENJUALAN HARIAN -->
       <div
-        class="bg-[#fffbf7] rounded-3xl p-6 shadow-sm border border-[#f0ce97] border-opacity-40 overflow-hidden"
+        class="bg-[#fffbf7] rounded-2xl p-6 shadow-sm border border-[#f0ce97] border-opacity-40"
       >
         <h2 class="text-lg font-bold text-[#4a2f1d] mb-4">
-          Riwayat Transaksi (Audit Log)
+          Rekap Penjualan Rider (Harian)
         </h2>
-        <div class="overflow-x-auto">
-          <table class="w-full text-left text-[#4a2f1d]">
+
+        <div
+          class="overflow-x-auto rounded-xl border border-[#e5b976] shadow-sm"
+        >
+          <!-- TABEL SUDAH DIBERSIHKAN (HANYA 5 KOLOM) -->
+          <table class="w-full text-left border-collapse min-w-[600px]">
             <thead>
-              <tr class="bg-[#5c3a21] text-white">
-                <th class="p-4 font-semibold text-sm rounded-tl-lg">Waktu</th>
-                <th class="p-4 font-semibold text-sm">Rider</th>
-                <th class="p-4 font-semibold text-sm">Produk</th>
-                <th class="p-4 font-semibold text-sm text-center">Bawa</th>
-                <th class="p-4 font-semibold text-sm text-center">Laku</th>
-                <th class="p-4 font-semibold text-sm text-center">Sisa</th>
-                <th class="p-4 font-semibold text-sm text-right rounded-tr-lg">
-                  Pendapatan
+              <tr class="bg-[#5c3a21] text-white text-sm tracking-wide">
+                <th class="py-3 px-4 font-semibold whitespace-nowrap">
+                  Tanggal
+                </th>
+                <th class="py-3 px-4 font-semibold">Rider</th>
+                <th class="py-3 px-4 font-semibold">Produk</th>
+                <th class="py-3 px-4 font-semibold text-center">Total Laku</th>
+                <th class="py-3 px-4 font-semibold text-right rounded-tr-xl">
+                  Total Omset
                 </th>
               </tr>
             </thead>
-            <tbody>
+            <tbody class="bg-white">
               <tr
-                v-for="log in riwayatPenjualan"
-                :key="log.id"
-                class="border-b border-[#e5b976] border-opacity-30 hover:bg-white transition-colors text-sm"
+                v-for="(log, index) in riwayatTransaksi"
+                :key="index"
+                class="hover:bg-[#fdf5e6] transition-colors border-b border-gray-100 last:border-0"
               >
-                <td class="p-4">{{ log.waktu_format }}</td>
-                <td class="p-4 font-bold text-[#8b5a33]">
-                  {{ log.nama_rider }}
+                <td class="py-3 px-4 text-xs text-gray-500 whitespace-nowrap">
+                  {{ log.waktu_format }}
                 </td>
-                <td class="p-4 font-medium">{{ log.nama_produk }}</td>
-                <td class="p-4 text-center">{{ log.jumlah_dibawa }}</td>
-                <td class="p-4 text-center font-bold text-green-600">
-                  {{ log.terjual }}
+                <td class="py-3 px-4">
+                  <span
+                    class="bg-[#f4e8d8] text-[#8b5a33] text-xs font-bold px-2.5 py-1 rounded-md border border-[#e5b976] border-opacity-50"
+                  >
+                    {{ log.nama_rider }}
+                  </span>
                 </td>
-                <td class="p-4 text-center text-red-500">{{ log.sisa }}</td>
-                <td class="p-4 text-right font-mono font-bold">
-                  Rp {{ log.total_pendapatan.toLocaleString("id-ID") }}
+                <td class="py-3 px-4 text-sm font-bold text-[#4a2f1d]">
+                  {{ log.nama_produk }}
+                </td>
+                <td class="py-3 px-4 text-center">
+                  <span
+                    class="bg-green-50 text-green-600 font-extrabold px-4 py-1.5 rounded-md border border-green-200 inline-block min-w-[50px]"
+                  >
+                    {{ log.terjual }}
+                  </span>
+                </td>
+                <td
+                  class="py-3 px-4 text-sm text-right font-bold text-[#4a2f1d]"
+                >
+                  {{ formatRupiah(log.total_pendapatan) }}
                 </td>
               </tr>
-              <tr v-if="riwayatPenjualan.length === 0">
-                <td colspan="7" class="p-6 text-center text-gray-400 italic">
-                  Data transaksi masih kosong.
+
+              <tr v-if="riwayatTransaksi.length === 0">
+                <td
+                  colspan="5"
+                  class="p-8 text-center text-gray-400 text-sm italic"
+                >
+                  Data rekap penjualan masih kosong. Lakukan penjualan di menu
+                  Rider POS.
                 </td>
               </tr>
             </tbody>
@@ -179,101 +206,59 @@
 
 <script setup>
 import { ref, onMounted } from "vue";
-import Chart from "chart.js/auto";
 
 // --- DATA REAKTIF ---
-const summary = ref({ totalPendapatan: 0, totalCup: 0, menuJuara: "-" });
-const leaderboard = ref([]);
-const riwayatPenjualan = ref([]);
-const grafikCanvas = ref(null);
-let chartInstance = null;
+const topMenu = ref([]);
+const klasemenRider = ref([]);
+const riwayatTransaksi = ref([]);
 
-// --- 1. AMBIL DATA SUMMARY ---
-const ambilSummary = async () => {
+// --- FUNGSI FORMAT MATA UANG ---
+const formatRupiah = (angka) => {
+  if (!angka) return "Rp 0";
+  return new Intl.NumberFormat("id-ID", {
+    style: "currency",
+    currency: "IDR",
+    minimumFractionDigits: 0,
+  }).format(angka);
+};
+
+// --- FUNGSI FETCH API ---
+const fetchTopMenu = async () => {
   try {
-    const res = await fetch("http://localhost:3000/laporan-penjualan/summary");
-    if (res.ok) summary.value = await res.json();
-  } catch (error) {
-    console.error("Error summary:", error);
+    const res = await fetch("http://localhost:3000/laporan/top-menu");
+    if (res.ok) topMenu.value = await res.json();
+  } catch (err) {
+    console.error(err);
   }
 };
 
-// --- 2. AMBIL DATA LEADERBOARD ---
-const ambilLeaderboard = async () => {
+const fetchKlasemenRider = async () => {
   try {
-    const res = await fetch(
-      "http://localhost:3000/laporan-penjualan/leaderboard",
-    );
-    if (res.ok) leaderboard.value = await res.json();
-  } catch (error) {
-    console.error("Error leaderboard:", error);
+    const res = await fetch("http://localhost:3000/laporan/klasemen-rider");
+    if (res.ok) klasemenRider.value = await res.json();
+  } catch (err) {
+    console.error(err);
   }
 };
 
-// --- 3. AMBIL DATA RIWAYAT TABEL ---
-const ambilRiwayat = async () => {
+const fetchRiwayat = async () => {
   try {
     const res = await fetch("http://localhost:3000/laporan-penjualan/riwayat");
-    if (res.ok) riwayatPenjualan.value = await res.json();
-  } catch (error) {
-    console.error("Error riwayat:", error);
+    if (res.ok) riwayatTransaksi.value = await res.json();
+  } catch (err) {
+    console.error(err);
   }
 };
 
-// --- 4. GAMBAR GRAFIK TREN HARIAN ---
-const gambarGrafik = async () => {
-  try {
-    const res = await fetch("http://localhost:3000/laporan-penjualan/grafik");
-    if (!res.ok) return;
-
-    const dataHarian = await res.json();
-
-    // Hancurkan chart lama jika ada (mencegah error saat pindah halaman)
-    if (chartInstance) chartInstance.destroy();
-
-    chartInstance = new Chart(grafikCanvas.value, {
-      type: "line", // Menggunakan Line Chart agar terlihat seperti tren arus kas
-      data: {
-        labels: dataHarian.labels, // Contoh: ['1 Apr', '2 Apr', '3 Apr', ...]
-        datasets: [
-          {
-            label: "Pendapatan Harian (Rp)",
-            data: dataHarian.pendapatan,
-            borderColor: "#8b5a33",
-            backgroundColor: "rgba(139, 90, 51, 0.1)", // Efek blok warna transparan di bawah garis
-            borderWidth: 3,
-            pointBackgroundColor: "#c28147",
-            pointRadius: 4,
-            fill: true,
-            tension: 0.3, // Membuat garis sedikit melengkung (smooth)
-          },
-        ],
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: { legend: { display: false } },
-        scales: {
-          y: {
-            beginAtZero: true,
-            ticks: {
-              callback: (value) => "Rp " + value.toLocaleString("id-ID"),
-            }, // Format angka di sumbu Y
-          },
-        },
-      },
-    });
-  } catch (error) {
-    console.error("Error grafik:", error);
-  }
+// --- REFRESH SEMUA DATA ---
+const refreshData = () => {
+  fetchTopMenu();
+  fetchKlasemenRider();
+  fetchRiwayat();
 };
 
-// --- JALANKAN SAAT HALAMAN DIBUKA ---
+// --- INIT SAAT HALAMAN DIBUKA ---
 onMounted(() => {
-  // Semua fungsi dipanggil serentak
-  ambilSummary();
-  ambilLeaderboard();
-  ambilRiwayat();
-  gambarGrafik();
+  refreshData();
 });
 </script>

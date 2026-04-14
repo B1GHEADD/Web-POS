@@ -76,20 +76,13 @@
               Laporan Penjualan
             </RouterLink>
             <RouterLink
-              to="/laporan/keuangan"
+              to="laporan-keuangan"
               class="block px-10 py-2 text-sm text-gray-400 hover:text-white hover:bg-[#5a361d] transition-colors"
             >
               Laporan Keuangan
             </RouterLink>
           </div>
         </div>
-
-        <a
-          href="#"
-          class="flex items-center px-6 py-4 hover:bg-[#6b4226] transition-colors text-gray-300 border-l-4 border-transparent"
-        >
-          <span>Pengaturan</span>
-        </a>
       </nav>
     </div>
 

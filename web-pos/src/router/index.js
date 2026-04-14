@@ -4,6 +4,7 @@ import RiderView from "@/views/RiderView.vue";
 import ProduksiView from "@/views/ProduksiView.vue";
 import LaporanProduksiView from "@/views/LaporanProduksiView.vue";
 import LaporanPenjualanView from "@/views/LaporanPenjualanView.vue";
+import LaporanKeuanganView from "@/views/LaporanKeuanganView.vue";
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -32,6 +33,11 @@ const router = createRouter({
       path: "/laporan-penjualan",
       name: "laporan-penjualan",
       component: LaporanPenjualanView,
+    },
+    {
+      path: "/laporan-keuangan",
+      name: "laporan-keuangan",
+      component: LaporanKeuanganView,
     },
   ],
 });
