@@ -1,71 +1,112 @@
 <template>
   <main
-    class="flex-1 flex items-center justify-center p-2 md:p-4 overflow-hidden w-full h-full"
+    class="flex-1 flex flex-col p-4 md:p-8 overflow-y-auto w-full h-full bg-[#fcf9f5]"
   >
-    <div class="max-w-5xl w-full">
+    <div class="max-w-6xl mx-auto w-full space-y-8">
+      <!-- HEADER -->
       <div
-        class="bg-[#fffbf7] rounded-2xl p-4 md:p-5 shadow-sm border border-[#f0ce97] border-opacity-40 flex flex-col md:flex-row gap-4 md:gap-6"
+        class="flex flex-col md:flex-row justify-between items-start md:items-end border-b border-[#e5b976] pb-4 gap-4"
       >
+        <div>
+          <h1 class="text-3xl font-extrabold text-[#4a2f1d] tracking-tight">
+            Manajemen Produksi
+          </h1>
+          <p class="text-sm text-[#8b5a33] mt-1 font-medium">
+            Atur pemasukan bahan baku dan eksekusi resep harian Anda.
+          </p>
+        </div>
+      </div>
+
+      <!-- KONTEN UTAMA: 2 KARTU -->
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
         <!-- ========================================== -->
-        <!-- SISI KIRI: INPUT BAHAN BAKU (MASUK) -->
+        <!-- KARTU KIRI: INPUT BAHAN BAKU (MASUK) -->
         <!-- ========================================== -->
-        <div class="flex-1">
-          <h2
-            class="text-base md:text-lg font-bold text-[#4a2f1d] mb-3 border-b border-[#e5b976] pb-2"
+        <div
+          class="bg-white rounded-3xl p-6 md:p-8 shadow-sm border border-[#f0ce97] border-opacity-50 hover:shadow-md transition-shadow duration-300 flex flex-col relative overflow-hidden"
+        >
+          <!-- Hiasan Sudut -->
+          <div
+            class="absolute -right-6 -top-6 bg-[#fdf5e6] w-24 h-24 rounded-full opacity-50 pointer-events-none"
+          ></div>
+
+          <div
+            class="flex items-center gap-3 mb-6 border-b border-gray-100 pb-4 relative z-10"
           >
-            Input Bahan Baku (Masuk)
-          </h2>
-
-          <div class="space-y-2.5">
-            <div>
-              <label
-                class="block font-medium text-[#4a2f1d] mb-0.5 text-xs md:text-sm"
-                >Tanggal Input</label
+            <div class="bg-[#c28147] p-2.5 rounded-xl shadow-inner text-white">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                class="h-6 w-6"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
               >
-              <input
-                type="date"
-                v-model="tanggalInputBahan"
-                class="w-full bg-white border border-[#e5b976] text-[#4a2f1d] rounded-lg px-3 py-1.5 focus:outline-none focus:ring-1 focus:ring-[#8b5a33] text-sm"
-              />
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"
+                />
+              </svg>
             </div>
+            <h2 class="text-xl font-bold text-[#4a2f1d]">
+              Input Bahan Baku
+              <span class="text-[#8b5a33] font-medium text-base"
+                >(Restock)</span
+              >
+            </h2>
+          </div>
 
-            <div>
-              <label
-                class="block font-medium text-[#4a2f1d] mb-0.5 text-xs md:text-sm"
-                >Nama Bahan</label
-              >
-              <select
-                v-model="namaBahanMasuk"
-                class="w-full bg-white border border-[#e5b976] text-[#4a2f1d] rounded-lg px-3 py-1.5 focus:outline-none focus:ring-1 focus:ring-[#8b5a33] text-sm"
-              >
-                <option value="" disabled selected>Pilih Bahan</option>
-                <option
-                  v-for="(bahan, index) in listBahan"
-                  :key="index"
-                  :value="bahan.nama_bahan"
+          <div class="space-y-5 flex-1 relative z-10">
+            <!-- Row 1: Tanggal & Nama -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+              <div class="space-y-1.5">
+                <label class="block text-sm font-bold text-gray-600"
+                  >Tanggal Input</label
                 >
-                  {{ bahan.nama_bahan }}
-                </option>
-              </select>
+                <input
+                  type="date"
+                  v-model="tanggalInputBahan"
+                  class="w-full bg-[#fdf8f2] border border-[#e8d5c4] text-[#4a2f1d] rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-[#c28147] focus:bg-white transition-all font-medium"
+                />
+              </div>
+              <div class="space-y-1.5">
+                <label class="block text-sm font-bold text-gray-600"
+                  >Nama Bahan</label
+                >
+                <select
+                  v-model="namaBahanMasuk"
+                  class="w-full bg-[#fdf8f2] border border-[#e8d5c4] text-[#4a2f1d] rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-[#c28147] focus:bg-white transition-all font-medium appearance-none"
+                >
+                  <option value="" disabled selected>Pilih Bahan...</option>
+                  <option
+                    v-for="(bahan, index) in listBahan"
+                    :key="index"
+                    :value="bahan.nama_bahan"
+                  >
+                    {{ bahan.nama_bahan }}
+                  </option>
+                </select>
+              </div>
             </div>
 
-            <div>
-              <label
-                class="block font-medium text-[#4a2f1d] mb-0.5 text-xs md:text-sm"
+            <!-- Row 2: Jumlah & Satuan -->
+            <div class="space-y-1.5">
+              <label class="block text-sm font-bold text-gray-600"
                 >Jumlah & Satuan</label
               >
-              <div class="flex space-x-2">
+              <div class="flex gap-3">
                 <input
                   type="number"
                   v-model="jumlahBahanMasuk"
-                  placeholder="0"
-                  class="w-2/3 bg-white border border-[#e5b976] text-[#4a2f1d] rounded-lg px-3 py-1.5 focus:outline-none focus:ring-1 focus:ring-[#8b5a33] text-sm"
+                  placeholder="Contoh: 1000"
+                  class="w-2/3 bg-[#fdf8f2] border border-[#e8d5c4] text-[#4a2f1d] rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-[#c28147] focus:bg-white transition-all font-bold"
                 />
                 <select
                   v-model="satuanBahanMasuk"
-                  class="w-1/3 bg-[#f4e8d8] border border-[#e5b976] text-[#4a2f1d] rounded-lg px-3 py-1.5 focus:outline-none focus:ring-1 focus:ring-[#8b5a33] text-sm"
+                  class="w-1/3 bg-[#fdf8f2] border border-[#e8d5c4] text-[#8b5a33] font-bold rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-[#c28147] focus:bg-white transition-all appearance-none text-center"
                 >
-                  <option value="" disabled>Pilih</option>
+                  <option value="" disabled>Satuan</option>
                   <option>ml</option>
                   <option>Gram</option>
                   <option>Pcs</option>
@@ -73,136 +114,206 @@
               </div>
             </div>
 
-            <div>
-              <label
-                class="block font-medium text-[#4a2f1d] mb-0.5 text-xs md:text-sm"
+            <!-- Row 3: Harga Beli -->
+            <div class="space-y-1.5">
+              <label class="block text-sm font-bold text-gray-600"
                 >Total Harga Beli (Rp)</label
               >
-              <input
-                type="number"
-                v-model="hargaBahanMasuk"
-                placeholder="Contoh: 50000"
-                class="w-full bg-white border border-[#e5b976] text-[#4a2f1d] rounded-lg px-3 py-1.5 focus:outline-none focus:ring-1 focus:ring-[#8b5a33] text-sm"
-              />
+              <div class="relative">
+                <span
+                  class="absolute inset-y-0 left-0 flex items-center pl-4 text-gray-400 font-bold"
+                  >Rp</span
+                >
+                <input
+                  type="number"
+                  v-model="hargaBahanMasuk"
+                  placeholder="50000"
+                  class="w-full bg-[#fdf8f2] border border-[#e8d5c4] text-[#4a2f1d] rounded-xl pl-12 pr-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-[#c28147] focus:bg-white transition-all font-bold"
+                />
+              </div>
             </div>
 
-            <div>
-              <label
-                class="block font-medium text-[#4a2f1d] mb-0.5 text-xs md:text-sm"
-                >Tanggal Expired Bahan</label
+            <!-- Row 4: Expired -->
+            <div class="space-y-1.5 pb-4">
+              <label class="block text-sm font-bold text-gray-600"
+                >Tanggal Kedaluwarsa (Expired)</label
               >
               <input
                 type="date"
                 v-model="expiredBahanMasuk"
-                class="w-full bg-white border border-[#e5b976] text-[#4a2f1d] rounded-lg px-3 py-1.5 focus:outline-none focus:ring-1 focus:ring-[#8b5a33] text-sm"
+                class="w-full bg-[#fdf8f2] border border-[#e8d5c4] text-red-700 rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-red-300 focus:bg-white transition-all font-bold"
               />
             </div>
 
-            <div class="flex justify-end pt-1">
-              <button
-                @click="simpanRestock"
-                :disabled="isRestockLoading"
-                class="w-full bg-[#c28147] hover:bg-[#a66a35] disabled:bg-gray-400 text-white font-semibold py-1.5 px-6 rounded-lg shadow transition-colors text-sm"
+            <button
+              @click="simpanRestock"
+              :disabled="isRestockLoading"
+              class="w-full bg-[#e5b976] hover:bg-[#c28147] disabled:bg-gray-300 text-white font-extrabold py-3.5 px-6 rounded-xl shadow-md transition-all flex items-center justify-center gap-2 group"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                class="h-5 w-5 group-hover:scale-110 transition-transform"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
               >
-                {{ isRestockLoading ? "Memproses..." : "Tambah Stok Gudang" }}
-              </button>
-            </div>
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M12 4v16m8-8H4"
+                />
+              </svg>
+              {{ isRestockLoading ? "Memproses..." : "Tambah ke Gudang" }}
+            </button>
           </div>
         </div>
 
-        <!-- Garis Pemisah -->
-        <div class="hidden md:block w-px bg-[#e5b976] opacity-50"></div>
-
         <!-- ========================================== -->
-        <!-- SISI KANAN: PRODUKSI KOPI (RESEP) -->
+        <!-- KARTU KANAN: PRODUKSI KOPI (RESEP) -->
         <!-- ========================================== -->
-        <div class="flex-1">
-          <h2
-            class="text-base md:text-lg font-bold text-[#4a2f1d] mb-3 border-b border-[#e5b976] pb-2"
+        <div
+          class="bg-white rounded-3xl p-6 md:p-8 shadow-sm border border-[#f0ce97] border-opacity-50 hover:shadow-md transition-shadow duration-300 flex flex-col relative overflow-hidden"
+        >
+          <div
+            class="flex items-center gap-3 mb-6 border-b border-gray-100 pb-4 relative z-10"
           >
-            Produksi Kopi (Sistem Resep)
-          </h2>
-
-          <div class="space-y-3">
-            <div class="flex justify-between items-center">
-              <label class="font-medium text-[#4a2f1d] text-xs md:text-sm"
-                >Tanggal Dibuat</label
+            <div class="bg-[#5c3a21] p-2.5 rounded-xl shadow-inner text-white">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                class="h-6 w-6"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
               >
-              <input
-                type="date"
-                v-model="tanggalProduksi"
-                class="w-48 bg-white border border-[#e5b976] text-[#4a2f1d] rounded-lg px-3 py-1.5 focus:outline-none focus:ring-1 focus:ring-[#8b5a33] text-sm"
-              />
-            </div>
-
-            <div class="flex justify-between items-center">
-              <label class="font-medium text-[#4a2f1d] text-xs md:text-sm"
-                >Tanggal Expired (3 Hari)</label
-              >
-              <input
-                type="date"
-                :value="tanggalExpired"
-                disabled
-                class="w-48 bg-gray-100 border border-[#e5b976] text-[#8b5a33] font-semibold rounded-lg px-3 py-1.5 focus:outline-none cursor-not-allowed text-sm"
-              />
-            </div>
-
-            <div class="flex justify-between items-center">
-              <label class="font-medium text-[#4a2f1d] text-xs md:text-sm"
-                >Menu yang Dibuat</label
-              >
-              <select
-                v-model="menuDibuat"
-                class="w-48 bg-white border border-[#e5b976] text-[#4a2f1d] rounded-lg px-3 py-1.5 focus:outline-none focus:ring-1 focus:ring-[#8b5a33] text-sm"
-              >
-                <option value="" disabled selected>Pilih Menu</option>
-                <option
-                  v-for="(menu, index) in listMenu"
-                  :key="index"
-                  :value="menu.nama_produk"
-                >
-                  {{ menu.nama_produk }}
-                </option>
-              </select>
-            </div>
-
-            <div class="flex justify-between items-center">
-              <label class="font-medium text-[#4a2f1d] text-xs md:text-sm"
-                >Jumlah Porsi</label
-              >
-              <div class="flex items-center space-x-2 w-48">
-                <input
-                  type="number"
-                  placeholder="0"
-                  v-model="jumlahProduksi"
-                  class="w-20 text-center bg-white border border-[#e5b976] text-[#4a2f1d] rounded-lg px-3 py-1.5 focus:outline-none focus:ring-1 focus:ring-[#8b5a33] text-sm"
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M13 10V3L4 14h7v7l9-11h-7z"
                 />
-                <span class="text-[#4a2f1d] font-medium text-xs md:text-sm"
-                  >Cup</span
-                >
-              </div>
+              </svg>
             </div>
-
-            <div
-              class="bg-[#f4e8d8] p-2 rounded-lg border border-[#e5b976] mt-2 shadow-inner"
-            >
-              <p
-                class="text-[11px] text-[#8b5a33] text-center font-medium m-0 leading-tight"
+            <h2 class="text-xl font-bold text-[#4a2f1d]">
+              Produksi Kopi
+              <span class="text-[#8b5a33] font-medium text-base"
+                >(Sistem Resep)</span
               >
-                *Stok bahan baku otomatis terpotong & stok barang jadi bertambah
-                di database.
+            </h2>
+          </div>
+
+          <div class="space-y-6 flex-1 flex flex-col relative z-10">
+            <div
+              class="bg-[#fdf5e6] p-4 rounded-2xl border border-[#f0ce97] flex gap-3 items-start shadow-sm"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                class="h-5 w-5 text-[#c28147] flex-shrink-0 mt-0.5"
+                viewBox="0 0 20 20"
+                fill="currentColor"
+              >
+                <path
+                  fill-rule="evenodd"
+                  d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
+                  clip-rule="evenodd"
+                />
+              </svg>
+              <p class="text-xs text-[#8b5a33] font-medium leading-relaxed">
+                Produksi otomatis akan
+                <strong class="text-[#4a2f1d]">memotong stok bahan baku</strong>
+                sesuai resep dan menambahkan stok produk jadi ke kulkas.
               </p>
             </div>
 
-            <div class="flex justify-end pt-2">
-              <button
-                @click="simpanProduksi"
-                :disabled="isProduksiLoading"
-                class="bg-gradient-to-r from-[#8b5a33] to-[#5c3a21] hover:from-[#6b4226] hover:to-[#3e2511] disabled:from-gray-400 disabled:to-gray-500 text-white font-semibold py-1.5 px-8 rounded-lg shadow-md transition-all text-sm"
-              >
-                {{ isProduksiLoading ? "Memproses..." : "Simpan Produksi" }}
-              </button>
+            <div class="space-y-5 flex-1">
+              <!-- Tanggal Dibuat & Expired -->
+              <div class="grid grid-cols-2 gap-4">
+                <div class="space-y-1.5">
+                  <label
+                    class="block text-xs font-bold text-gray-500 uppercase tracking-wide"
+                    >Tgl Dibuat</label
+                  >
+                  <input
+                    type="date"
+                    v-model="tanggalProduksi"
+                    class="w-full bg-[#fcf9f5] border border-[#e8d5c4] text-[#4a2f1d] rounded-xl px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-[#5c3a21] font-medium text-sm"
+                  />
+                </div>
+                <div class="space-y-1.5">
+                  <label
+                    class="block text-xs font-bold text-gray-500 uppercase tracking-wide"
+                    >Expired (3 Hari)</label
+                  >
+                  <input
+                    type="date"
+                    :value="tanggalExpired"
+                    disabled
+                    class="w-full bg-gray-100 border border-gray-200 text-gray-500 rounded-xl px-3 py-2.5 cursor-not-allowed font-medium text-sm"
+                  />
+                </div>
+              </div>
+
+              <!-- Menu Dibuat -->
+              <div class="space-y-1.5">
+                <label class="block text-sm font-bold text-gray-600"
+                  >Menu yang Dibuat</label
+                >
+                <select
+                  v-model="menuDibuat"
+                  class="w-full bg-[#fcf9f5] border border-[#e8d5c4] text-[#4a2f1d] rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[#5c3a21] transition-all font-bold text-lg appearance-none"
+                >
+                  <option value="" disabled selected>
+                    Pilih Varian Kopi...
+                  </option>
+                  <option
+                    v-for="(menu, index) in listMenu"
+                    :key="index"
+                    :value="menu.nama_produk"
+                  >
+                    {{ menu.nama_produk }}
+                  </option>
+                </select>
+              </div>
+
+              <!-- Jumlah Porsi -->
+              <div class="space-y-1.5 pb-4">
+                <label class="block text-sm font-bold text-gray-600"
+                  >Jumlah Porsi</label
+                >
+                <div class="flex items-center gap-3">
+                  <input
+                    type="number"
+                    v-model="jumlahProduksi"
+                    placeholder="0"
+                    class="w-1/2 bg-[#fcf9f5] border border-[#e8d5c4] text-[#4a2f1d] rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[#5c3a21] transition-all font-extrabold text-2xl text-center"
+                  />
+                  <span class="text-gray-500 font-bold text-lg">Cup</span>
+                </div>
+              </div>
             </div>
+
+            <!-- Tombol Eksekusi -->
+            <button
+              @click="simpanProduksi"
+              :disabled="isProduksiLoading"
+              class="w-full bg-gradient-to-r from-[#8b5a33] to-[#5c3a21] hover:from-[#6b4226] hover:to-[#3e2511] disabled:from-gray-400 disabled:to-gray-500 text-white font-extrabold py-4 px-6 rounded-xl shadow-lg transition-all flex items-center justify-center gap-2 uppercase tracking-wide"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                class="h-5 w-5"
+                viewBox="0 0 20 20"
+                fill="currentColor"
+              >
+                <path
+                  fill-rule="evenodd"
+                  d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z"
+                  clip-rule="evenodd"
+                />
+              </svg>
+              {{
+                isProduksiLoading ? "Memproses Resep..." : "Eksekusi Produksi"
+              }}
+            </button>
           </div>
         </div>
       </div>
@@ -225,29 +336,24 @@ const getTanggalLokal = () => {
 // ==========================================
 // 1. DATA REAKTIF SISI KIRI (RESTOCK BAHAN)
 // ==========================================
-// Memanggil fungsi getTanggalLokal() sebagai nilai awal
 const tanggalInputBahan = ref(getTanggalLokal());
 const namaBahanMasuk = ref("");
 const jumlahBahanMasuk = ref(null);
 const satuanBahanMasuk = ref("");
 const hargaBahanMasuk = ref(null);
-// Tanggal expired dikosongkan karena input manual masa depan
 const expiredBahanMasuk = ref("");
 const isRestockLoading = ref(false);
 
-// Penampung data bahan dinamis
 const listBahan = ref([]);
 
 // ==========================================
 // 2. DATA REAKTIF SISI KANAN (PRODUKSI KOPI)
 // ==========================================
-// Memanggil fungsi getTanggalLokal() sebagai nilai awal
 const tanggalProduksi = ref(getTanggalLokal());
 const menuDibuat = ref("");
 const jumlahProduksi = ref(null);
 const isProduksiLoading = ref(false);
 
-// Penampung data menu dinamis
 const listMenu = ref([]);
 
 // --- LOGIKA TANGGAL EXPIRED PRODUKSI (+3 HARI) ---
@@ -327,7 +433,6 @@ const simpanRestock = async () => {
       alert(
         `✅ Berhasil!\nStok ${namaBahanMasuk.value} telah ditambahkan ke gudang.`,
       );
-
       namaBahanMasuk.value = "";
       jumlahBahanMasuk.value = null;
       satuanBahanMasuk.value = "";
