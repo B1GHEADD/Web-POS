@@ -37,15 +37,16 @@
         </button>
       </div>
 
-      <!-- 1. KPI (HIGHLIGHT HARI INI) -->
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <!-- 1. KPI (HIGHLIGHT HARI INI) - Diubah jadi 3 Kolom -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <!-- Card Omset -->
         <div
-          class="bg-gradient-to-br from-[#8b5a33] to-[#5c3a21] rounded-2xl p-5 shadow-md text-white flex flex-col justify-between h-32 relative overflow-hidden"
+          class="bg-gradient-to-br from-[#8b5a33] to-[#5c3a21] rounded-2xl p-6 shadow-md text-white flex flex-col justify-between h-36 relative overflow-hidden transition-transform hover:-translate-y-1"
         >
           <div class="absolute -right-4 -bottom-4 opacity-20">
             <svg
               xmlns="http://www.w3.org/2000/svg"
-              class="h-24 w-24"
+              class="h-28 w-28"
               fill="none"
               viewBox="0 0 24 24"
               stroke="currentColor"
@@ -54,19 +55,21 @@
                 stroke-linecap="round"
                 stroke-linejoin="round"
                 stroke-width="2"
-                d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08-.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
               />
             </svg>
           </div>
           <p class="text-sm font-medium text-[#e5b976] z-10">
             Total Omset (Hari Ini)
           </p>
-          <h3 class="text-2xl font-extrabold z-10">
+          <h3 class="text-3xl font-extrabold z-10">
             {{ formatRupiah(kpi.omset) }}
           </h3>
         </div>
+
+        <!-- Card Terjual -->
         <div
-          class="bg-white border border-[#e5b976] rounded-2xl p-5 shadow-sm flex flex-col justify-between h-32"
+          class="bg-white border border-[#e5b976] rounded-2xl p-6 shadow-sm flex flex-col justify-between h-36 transition-transform hover:-translate-y-1"
         >
           <p class="text-sm font-bold text-gray-500">Cup Terjual (Hari Ini)</p>
           <div class="flex items-end gap-2">
@@ -76,8 +79,10 @@
             <span class="text-sm text-gray-400 font-medium mb-1">Cup</span>
           </div>
         </div>
+
+        <!-- Card Stok Kulkas -->
         <div
-          class="bg-white border border-[#e5b976] rounded-2xl p-5 shadow-sm flex flex-col justify-between h-32"
+          class="bg-white border border-[#e5b976] rounded-2xl p-6 shadow-sm flex flex-col justify-between h-36 transition-transform hover:-translate-y-1"
         >
           <p class="text-sm font-bold text-gray-500">Stok Kopi Siap Jual</p>
           <div class="flex items-end gap-2">
@@ -89,22 +94,11 @@
             >
           </div>
         </div>
-        <div
-          class="bg-white border border-[#e5b976] rounded-2xl p-5 shadow-sm flex flex-col justify-between h-32"
-        >
-          <p class="text-sm font-bold text-gray-500">Rider Aktif (Hari Ini)</p>
-          <div class="flex items-end gap-2">
-            <h3 class="text-4xl font-extrabold text-green-600">
-              {{ kpi.riderAktif }}
-            </h3>
-            <span class="text-sm text-gray-400 font-medium mb-1">Orang</span>
-          </div>
-        </div>
       </div>
 
       <!-- 2. GRAFIK TREN PENJUALAN (MODERN MINIMALIS ECHARTS) -->
       <div
-        class="bg-[#fffbf7] rounded-2xl p-6 shadow-sm border border-[#f0ce97] border-opacity-40"
+        class="bg-[#fffbf7] rounded-3xl p-6 shadow-sm border border-[#f0ce97] border-opacity-40"
       >
         <h2
           class="text-lg font-bold text-[#4a2f1d] mb-2 flex items-center gap-2"
@@ -128,7 +122,7 @@
       <!-- 3. PERINGATAN SISTEM (ALERTS) -->
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div
-          class="bg-red-50 rounded-2xl p-5 shadow-sm border border-red-200 flex flex-col"
+          class="bg-red-50 rounded-3xl p-6 shadow-sm border border-red-200 flex flex-col"
         >
           <h2
             class="text-base font-bold text-red-800 mb-3 flex items-center gap-2"
@@ -151,13 +145,13 @@
             <li
               v-for="(item, index) in stokKritis"
               :key="index"
-              class="bg-white px-3 py-2 rounded-lg border border-red-100 flex justify-between items-center text-sm"
+              class="bg-white px-4 py-2.5 rounded-xl border border-red-100 flex justify-between items-center text-sm shadow-sm"
             >
               <span class="font-bold text-[#4a2f1d]">{{
                 item.nama_bahan
               }}</span>
               <span
-                class="bg-red-100 text-red-700 font-extrabold px-2 py-1 rounded"
+                class="bg-red-100 text-red-700 font-extrabold px-2.5 py-1 rounded-md"
                 >{{ item.stok_saat_ini }} {{ item.satuan }}</span
               >
             </li>
@@ -171,7 +165,7 @@
         </div>
 
         <div
-          class="bg-yellow-50 rounded-2xl p-5 shadow-sm border border-yellow-200 flex flex-col"
+          class="bg-yellow-50 rounded-3xl p-6 shadow-sm border border-yellow-200 flex flex-col"
         >
           <h2
             class="text-base font-bold text-yellow-800 mb-3 flex items-center gap-2"
@@ -194,7 +188,7 @@
             <li
               v-for="(item, index) in peringatanExpired"
               :key="index"
-              class="bg-white px-3 py-2 rounded-lg border border-yellow-100 flex justify-between items-center text-sm"
+              class="bg-white px-4 py-2.5 rounded-xl border border-yellow-100 flex justify-between items-center text-sm shadow-sm"
             >
               <div class="flex flex-col">
                 <span class="font-bold text-[#4a2f1d]">{{
@@ -205,7 +199,7 @@
                 >
               </div>
               <span
-                class="bg-yellow-100 text-yellow-700 font-extrabold px-2 py-1 rounded"
+                class="bg-yellow-100 text-yellow-700 font-extrabold px-2.5 py-1 rounded-md"
                 >{{ item.sisa_hari }} Hari Lagi</span
               >
             </li>
@@ -221,7 +215,7 @@
 
       <!-- 4. LIVE TRACKING TAS RIDER -->
       <div
-        class="bg-[#fffbf7] rounded-2xl p-6 shadow-sm border border-[#f0ce97] border-opacity-40"
+        class="bg-[#fffbf7] rounded-3xl p-6 shadow-sm border border-[#f0ce97] border-opacity-40"
       >
         <h2
           class="text-lg font-bold text-[#4a2f1d] mb-4 flex items-center gap-2"
@@ -243,24 +237,24 @@
           <table class="w-full text-left border-collapse min-w-[600px]">
             <thead>
               <tr class="bg-[#f4e8d8] text-[#8b5a33] text-sm tracking-wide">
-                <th class="py-3 px-4 font-bold border-b border-[#e5b976]">
+                <th class="py-4 px-5 font-bold border-b border-[#e5b976]">
                   Rider
                 </th>
-                <th class="py-3 px-4 font-bold border-b border-[#e5b976]">
+                <th class="py-4 px-5 font-bold border-b border-[#e5b976]">
                   Produk Dibawa
                 </th>
                 <th
-                  class="py-3 px-4 font-bold text-center border-b border-[#e5b976]"
+                  class="py-4 px-5 font-bold text-center border-b border-[#e5b976]"
                 >
                   Stok Awal
                 </th>
                 <th
-                  class="py-3 px-4 font-bold text-center border-b border-[#e5b976]"
+                  class="py-4 px-5 font-bold text-center border-b border-[#e5b976]"
                 >
                   Sudah Laku
                 </th>
                 <th
-                  class="py-3 px-4 font-bold text-center border-b border-[#e5b976]"
+                  class="py-4 px-5 font-bold text-center border-b border-[#e5b976]"
                 >
                   Sisa di Tas
                 </th>
@@ -270,27 +264,28 @@
               <tr
                 v-for="(rider, index) in liveTracking"
                 :key="index"
-                class="border-b border-gray-100 last:border-0 hover:bg-gray-50"
+                class="border-b border-gray-100 last:border-0 hover:bg-[#fdf5e6] transition-colors"
               >
-                <td class="py-3 px-4 text-sm font-extrabold text-[#4a2f1d]">
+                <td class="py-4 px-5 text-sm font-extrabold text-[#4a2f1d]">
                   {{ rider.nama_rider }}
                 </td>
-                <td class="py-3 px-4 text-sm font-medium">
+                <td class="py-4 px-5 text-sm font-medium text-[#8b5a33]">
                   {{ rider.nama_produk }}
                 </td>
                 <td
-                  class="py-3 px-4 text-sm text-center text-gray-400 font-bold"
+                  class="py-4 px-5 text-sm text-center text-gray-400 font-bold"
                 >
                   {{ rider.stok_bawa }}
                 </td>
-                <td class="py-3 px-4 text-center">
-                  <span class="text-green-600 font-bold">{{
-                    rider.terjual
-                  }}</span>
-                </td>
-                <td class="py-3 px-4 text-center">
+                <td class="py-4 px-5 text-center">
                   <span
-                    class="bg-[#c28147] text-white font-bold px-2 py-1 rounded text-xs"
+                    class="text-green-600 font-bold bg-green-50 px-3 py-1 rounded-md"
+                    >{{ rider.terjual }}</span
+                  >
+                </td>
+                <td class="py-4 px-5 text-center">
+                  <span
+                    class="bg-[#c28147] text-white font-bold px-3 py-1 rounded-md text-xs shadow-sm"
                     >Sisa {{ rider.sisa }}</span
                   >
                 </td>
@@ -298,7 +293,7 @@
               <tr v-if="liveTracking.length === 0">
                 <td
                   colspan="5"
-                  class="p-6 text-center text-gray-400 text-sm italic"
+                  class="p-8 text-center text-gray-400 text-sm italic"
                 >
                   Belum ada Rider yang membawa kopi hari ini.
                 </td>
@@ -313,10 +308,10 @@
 
 <script setup>
 import { ref, onMounted, onUnmounted } from "vue";
-import * as echarts from "echarts"; // Menggunakan Library ECharts
+import * as echarts from "echarts";
 
 // --- STATE ---
-const kpi = ref({ omset: 0, terjual: 0, stokKulkas: 0, riderAktif: 0 });
+const kpi = ref({ omset: 0, terjual: 0, stokKulkas: 0 }); // Rider aktif dihapus dari default
 const stokKritis = ref([]);
 const peringatanExpired = ref([]);
 const liveTracking = ref([]);
@@ -338,7 +333,7 @@ const formatRupiah = (angka) => {
 
 // --- INISIALISASI ECHARTS ---
 const renderChart = () => {
-  if (myChart) myChart.dispose(); // Bersihkan chart lama
+  if (myChart) myChart.dispose();
   myChart = echarts.init(chartDOM.value);
 
   if (dataGrafik.value.length === 0) {
@@ -356,11 +351,11 @@ const renderChart = () => {
   const option = {
     tooltip: {
       trigger: "axis",
-      backgroundColor: "rgba(255, 255, 255, 0.9)",
+      backgroundColor: "rgba(255, 255, 255, 0.95)",
       borderColor: "#e5b976",
       textStyle: { color: "#4a2f1d" },
       formatter: (params) => {
-        return `<div class="font-bold">${params[0].name}</div> Omset: <span class="font-extrabold text-[#8b5a33]">${formatRupiah(params[0].value)}</span>`;
+        return `<div class="font-bold mb-1">${params[0].name}</div> Omset: <span class="font-extrabold text-[#8b5a33]">${formatRupiah(params[0].value)}</span>`;
       },
     },
     grid: {

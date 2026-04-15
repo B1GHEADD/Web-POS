@@ -41,7 +41,8 @@
                 >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
-                    class="h-5 w-5 text-[#c28147]"
+                    class="h-5 w-5"
+                    :class="isRiderLocked ? 'text-gray-400' : 'text-[#c28147]'"
                     fill="none"
                     viewBox="0 0 24 24"
                     stroke="currentColor"
@@ -54,9 +55,11 @@
                     />
                   </svg>
                 </div>
+                <!-- PERUBAHAN: Tambahkan :disabled dan styling saat disabled -->
                 <select
                   v-model="namaRider"
-                  class="w-full bg-[#fdf8f2] border border-[#e8d5c4] text-[#4a2f1d] rounded-xl pl-10 pr-4 py-3 focus:outline-none focus:ring-2 focus:ring-[#c28147] transition-all font-bold appearance-none"
+                  :disabled="isRiderLocked"
+                  class="w-full bg-[#fdf8f2] border border-[#e8d5c4] text-[#4a2f1d] rounded-xl pl-10 pr-4 py-3 focus:outline-none focus:ring-2 focus:ring-[#c28147] transition-all font-bold appearance-none disabled:bg-gray-100 disabled:text-gray-500 disabled:cursor-not-allowed disabled:border-gray-200"
                 >
                   <option value="" disabled selected>Pilih Rider...</option>
                   <option
@@ -67,6 +70,26 @@
                     {{ rider.nama_rider }}
                   </option>
                 </select>
+                <!-- Ikon Gembok (Muncul jika locked) -->
+                <div
+                  v-if="isRiderLocked"
+                  class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    class="h-4 w-4 text-gray-400"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
+                    />
+                  </svg>
+                </div>
               </div>
             </div>
 
@@ -442,7 +465,7 @@
 <script setup>
 import { ref, onMounted, watch } from "vue";
 
-// --- FUNGSI AMBIL TANGGAL LOKAL (ANTI UTC BUG) ---
+// --- FUNGSI AMBIL TANGGAL LOKAL ---
 const getTanggalLokal = () => {
   const tgl = new Date();
   const tahun = tgl.getFullYear();
@@ -458,6 +481,9 @@ const namaRider = ref("");
 const tanggalInput = ref(getTanggalLokal());
 const isLoading = ref(false);
 const riwayatSesi = ref([]);
+
+// PERUBAHAN: Tambahkan variabel untuk mengunci Rider
+const isRiderLocked = ref(false);
 
 watch([namaRider, tanggalInput], () => {
   if (namaRider.value) {
@@ -644,8 +670,24 @@ const simpanPenjualanMasal = async () => {
   isLoading.value = false;
 };
 
+// ==========================================
+// JALANKAN SAAT HALAMAN DIBUKA
+// ==========================================
 onMounted(() => {
   ambilDataRider();
+
+  // PERUBAHAN: Cek siapa yang login dari LocalStorage
+  const userData = localStorage.getItem("user");
+  if (userData) {
+    const user = JSON.parse(userData);
+
+    // Jika yang login jabatannya adalah 'rider'
+    if (user.role === "rider") {
+      namaRider.value = user.nama_lengkap; // Isi otomatis namanya
+      isRiderLocked.value = true; // Kunci (disable) dropdown-nya
+    }
+  }
+
   ambilDataGabungan();
   ambilRiwayatHariIni();
 });

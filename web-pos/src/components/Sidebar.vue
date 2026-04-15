@@ -1,101 +1,194 @@
 <template>
   <aside
-    class="w-64 bg-[#4a2f1d] text-white flex flex-col justify-between hidden md:flex rounded-r-3xl shadow-xl z-20 h-screen sticky top-0"
+    class="w-64 bg-[#4a2f1d] text-white flex flex-col h-screen transition-all duration-300 shadow-2xl z-20 flex-shrink-0"
   >
-    <div>
-      <div class="p-6 flex items-center space-x-3">
-        <div
-          class="w-8 h-8 rounded-full bg-[#cda989] flex items-center justify-center text-xs"
-        >
-          ☕
-        </div>
-        <span class="text-2xl font-bold tracking-wider">Kupi Kita</span>
+    <!-- Logo Brand -->
+    <div class="p-6 border-b border-[#5c3a21] flex items-center gap-3">
+      <div
+        class="w-10 h-10 rounded-full bg-[#fdf5e6] flex items-center justify-center text-[#8b5a33] font-bold shadow-inner"
+      >
+        ☕
       </div>
-
-      <nav class="mt-4 flex flex-col">
-        <RouterLink
-          to="/"
-          :class="[
-            'flex items-center px-6 py-4 transition-colors',
-            $route.path === '/'
-              ? 'bg-[#6b4226] border-l-4 border-white font-semibold text-white'
-              : 'text-gray-300 hover:bg-[#6b4226] border-l-4 border-transparent',
-          ]"
-        >
-          <span>Dashboard</span>
-        </RouterLink>
-
-        <RouterLink
-          to="/rider"
-          :class="[
-            'flex items-center px-6 py-4 transition-colors',
-            $route.path === '/rider'
-              ? 'bg-[#6b4226] border-l-4 border-white font-semibold text-white'
-              : 'text-gray-300 hover:bg-[#6b4226] border-l-4 border-transparent',
-          ]"
-        >
-          <span>Rider POS</span>
-        </RouterLink>
-
-        <RouterLink
-          to="/produksi"
-          :class="[
-            'flex items-center px-6 py-4 transition-colors',
-            $route.path === '/produksi'
-              ? 'bg-[#6b4226] border-l-4 border-white font-semibold text-white'
-              : 'text-gray-300 hover:bg-[#6b4226] border-l-4 border-transparent',
-          ]"
-        >
-          <span>Produksi</span>
-        </RouterLink>
-
-        <div class="relative group cursor-pointer">
-          <div
-            class="flex items-center justify-between px-6 py-4 hover:bg-[#6b4226] transition-colors text-gray-300 border-l-4 border-transparent"
-          >
-            <span>Laporan</span>
-            <span
-              class="text-xs transition-transform group-hover:rotate-180 opacity-70"
-              >▼</span
-            >
-          </div>
-
-          <div
-            class="hidden group-hover:block bg-[#3e2511] w-full py-2 shadow-inner"
-          >
-            <RouterLink
-              to="/laporan-produksi"
-              class="block px-10 py-2 text-sm text-gray-400 hover:text-white hover:bg-[#5a361d] transition-colors"
-            >
-              Laporan Produksi
-            </RouterLink>
-            <RouterLink
-              to="laporan-penjualan"
-              class="block px-10 py-2 text-sm text-gray-400 hover:text-white hover:bg-[#5a361d] transition-colors"
-            >
-              Laporan Penjualan
-            </RouterLink>
-            <RouterLink
-              to="laporan-keuangan"
-              class="block px-10 py-2 text-sm text-gray-400 hover:text-white hover:bg-[#5a361d] transition-colors"
-            >
-              Laporan Keuangan
-            </RouterLink>
-          </div>
-        </div>
-      </nav>
+      <div>
+        <h1 class="text-xl font-extrabold tracking-wide text-white">
+          Kupi <span class="text-[#c28147]">Kita</span>
+        </h1>
+      </div>
     </div>
 
-    <div class="p-6">
-      <div
-        class="w-full h-32 bg-[#3e2511] rounded-xl flex items-center justify-center text-sm text-gray-400 border border-[#5c3a21]"
+    <!-- Info User Login -->
+    <div class="px-6 py-4 bg-[#3e2511] text-xs">
+      <p class="text-gray-400 mb-0.5">Login sebagai:</p>
+      <p class="font-bold text-[#e5b976] uppercase">
+        {{ userName }}
+        <span class="text-gray-400 text-[10px]">({{ userRole }})</span>
+      </p>
+    </div>
+
+    <!-- Menu Navigasi -->
+    <nav
+      class="flex-1 overflow-y-auto py-4 space-y-1.5 px-3 scrollbar-thin scrollbar-thumb-[#5c3a21]"
+    >
+      <!-- Menu Dashboard (Semua Role Bisa Akses) -->
+      <router-link
+        to="/dashboard"
+        class="flex items-center gap-3 px-4 py-3 rounded-xl transition-colors hover:bg-[#5c3a21] text-gray-200 hover:text-white"
+        active-class="bg-gradient-to-r from-[#c28147] to-[#8b5a33] text-white font-bold shadow-md"
       >
-        [Ilustrasi Kopi]
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          class="h-5 w-5"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"
+          />
+        </svg>
+        Dashboard
+      </router-link>
+
+      <!-- Menu Rider POS (Hanya Admin & Rider) -->
+      <router-link
+        v-if="userRole === 'admin' || userRole === 'rider'"
+        to="/rider"
+        class="flex items-center gap-3 px-4 py-3 rounded-xl transition-colors hover:bg-[#5c3a21] text-gray-200 hover:text-white"
+        active-class="bg-gradient-to-r from-[#c28147] to-[#8b5a33] text-white font-bold shadow-md"
+      >
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          class="h-5 w-5"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"
+          />
+        </svg>
+        Rider POS
+      </router-link>
+
+      <!-- Menu Produksi (Hanya Admin & Produksi) -->
+      <router-link
+        v-if="userRole === 'admin' || userRole === 'produksi'"
+        to="/produksi"
+        class="flex items-center gap-3 px-4 py-3 rounded-xl transition-colors hover:bg-[#5c3a21] text-gray-200 hover:text-white"
+        active-class="bg-gradient-to-r from-[#c28147] to-[#8b5a33] text-white font-bold shadow-md"
+      >
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          class="h-5 w-5"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 002-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"
+          />
+        </svg>
+        Produksi
+      </router-link>
+
+      <div
+        class="px-4 py-2 mt-4 text-[10px] font-bold text-[#e5b976] opacity-70 uppercase tracking-widest"
+      >
+        Laporan
       </div>
+
+      <!-- Laporan Penjualan (Hanya Admin & Rider) -->
+      <router-link
+        v-if="userRole === 'admin' || userRole === 'rider'"
+        to="/laporan-penjualan"
+        class="flex items-center gap-3 px-4 py-2.5 rounded-xl transition-colors hover:bg-[#5c3a21] text-gray-300 hover:text-white text-sm"
+        active-class="bg-[#5c3a21] text-white font-bold border-l-4 border-[#c28147]"
+      >
+        Penjualan Rider
+      </router-link>
+
+      <!-- Laporan Produksi (Hanya Admin & Produksi) -->
+      <router-link
+        v-if="userRole === 'admin' || userRole === 'produksi'"
+        to="/laporan-produksi"
+        class="flex items-center gap-3 px-4 py-2.5 rounded-xl transition-colors hover:bg-[#5c3a21] text-gray-300 hover:text-white text-sm"
+        active-class="bg-[#5c3a21] text-white font-bold border-l-4 border-[#c28147]"
+      >
+        Stok & Produksi
+      </router-link>
+
+      <!-- Laporan Keuangan (Hanya Admin) -->
+      <router-link
+        v-if="userRole === 'admin'"
+        to="/laporan-keuangan"
+        class="flex items-center gap-3 px-4 py-2.5 rounded-xl transition-colors hover:bg-[#5c3a21] text-gray-300 hover:text-white text-sm"
+        active-class="bg-[#5c3a21] text-white font-bold border-l-4 border-[#c28147]"
+      >
+        Keuangan (Pusat)
+      </router-link>
+    </nav>
+
+    <!-- Tombol Logout -->
+    <div class="p-4 border-t border-[#5c3a21]">
+      <button
+        @click="logout"
+        class="w-full flex items-center justify-center gap-2 bg-red-900 bg-opacity-40 hover:bg-red-700 text-red-200 hover:text-white py-3 px-4 rounded-xl transition-colors text-sm font-bold border border-red-900/50"
+      >
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          class="h-4 w-4"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
+          />
+        </svg>
+        Keluar Sistem
+      </button>
     </div>
   </aside>
 </template>
 
 <script setup>
-import { RouterLink } from "vue-router";
+import { ref, onMounted } from "vue";
+import { useRouter } from "vue-router";
+
+const router = useRouter();
+
+// Variabel untuk menyimpan info siapa yang sedang login
+const userRole = ref("");
+const userName = ref("");
+
+// Saat Sidebar dimunculkan, ambil data dari tiket (localStorage)
+onMounted(() => {
+  const userData = localStorage.getItem("user");
+  if (userData) {
+    const user = JSON.parse(userData);
+    userRole.value = user.role; // contoh: 'admin', 'rider', 'produksi'
+    userName.value = user.nama_lengkap; // contoh: 'Rico', 'Super Admin'
+  }
+});
+
+// Fungsi Logout: Hapus saku (localStorage) dan kembali ke halaman Login (/)
+const logout = () => {
+  const konfirmasi = confirm("Apakah Anda yakin ingin keluar dari aplikasi?");
+  if (konfirmasi) {
+    localStorage.removeItem("user");
+    router.push("/");
+  }
+};
 </script>

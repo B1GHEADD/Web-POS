@@ -1,9 +1,9 @@
 <template>
-  <div class="flex bg-[#fdfaf6] font-sans min-h-screen">
-    <Sidebar />
+  <div class="flex h-screen w-full bg-[#fdfaf6] font-sans overflow-hidden">
+    <Sidebar v-if="$route.path !== '/'" class="flex-shrink-0 shadow-xl z-20" />
 
-    <main class="flex-1 overflow-y-auto">
-      <div class="p-8">
+    <main class="flex-1 h-full overflow-y-auto relative scroll-smooth">
+      <div :class="$route.path !== '/' ? 'p-4 md:p-8' : 'h-full'">
         <RouterView />
       </div>
     </main>

@@ -51,7 +51,7 @@
 
           <!-- Tombol Kembali (Bisa menggunakan router-link jika vue-router digunakan) -->
           <router-link
-            to="/"
+            to="/dashboard"
             class="bg-gradient-to-r from-[#8b5a33] to-[#5c3a21] hover:from-[#6b4226] hover:to-[#3e2511] text-white font-bold py-3 px-8 rounded-xl shadow-md transition-all flex items-center gap-2"
           >
             <svg
