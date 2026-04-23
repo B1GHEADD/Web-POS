@@ -3,9 +3,8 @@
     class="flex-1 flex flex-col p-4 md:p-8 relative overflow-y-auto w-full h-full bg-[#fcf9f5]"
   >
     <div class="max-w-6xl mx-auto w-full space-y-8">
-      <!-- HEADER -->
       <div
-        class="flex justify-between items-end border-b border-[#e5b976] pb-4"
+        class="flex flex-col md:flex-row justify-between items-start md:items-end border-b border-[#e5b976] pb-4 gap-4"
       >
         <div>
           <h1 class="text-2xl font-bold text-[#4a2f1d]">
@@ -15,14 +14,46 @@
             Pantau penggunaan bahan baku dan resep paling laris
           </p>
         </div>
-        <select
-          class="bg-white border border-[#e5b976] text-[#4a2f1d] rounded-lg px-4 py-2 focus:outline-none focus:ring-1 focus:ring-[#8b5a33] shadow-sm font-medium"
-        >
-          <option>Tahun Ini (2026)</option>
-        </select>
+
+        <div class="flex items-center gap-3 w-full md:w-auto">
+          <div v-if="isSuperAdmin" class="relative flex-1 md:flex-none">
+            <select
+              v-model="activeCabang"
+              class="w-full bg-white border border-[#e5b976] text-[#4a2f1d] rounded-lg pl-4 pr-10 py-2.5 focus:outline-none focus:ring-2 focus:ring-[#c28147] shadow-sm font-bold appearance-none cursor-pointer"
+            >
+              <option :value="null">🌍 Seluruh Cabang</option>
+              <option :value="1">🏢 Cabang Sudirman</option>
+              <option :value="2">🏢 Cabang Kemang</option>
+              <option :value="3">🏢 Cabang Tebet</option>
+            </select>
+            <div
+              class="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none text-[#8b5a33]"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                class="h-4 w-4"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M19 9l-7 7-7-7"
+                />
+              </svg>
+            </div>
+          </div>
+
+          <select
+            class="bg-white border border-[#e5b976] text-[#4a2f1d] rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-[#8b5a33] shadow-sm font-medium"
+          >
+            <option>Tahun Ini (2026)</option>
+          </select>
+        </div>
       </div>
 
-      <!-- WIDGET: TOP 3 MENU TERLARIS -->
       <div
         class="bg-[#fffbf7] rounded-3xl p-6 shadow-sm border border-[#f0ce97] border-opacity-40"
       >
@@ -66,18 +97,15 @@
         </div>
       </div>
 
-      <!-- WIDGET: GRAFIK PENGGUNAAN BAHAN BAKU (MODERN ECHARTS) -->
       <div
         class="bg-[#fffbf7] rounded-3xl p-6 shadow-sm border border-[#f0ce97] border-opacity-40"
       >
         <h2 class="text-lg font-bold text-[#4a2f1d] mb-2">
           Grafik Detail Penggunaan Bahan Baku (2026)
         </h2>
-        <!-- Wadah untuk ECharts, menggunakan div biasa bukan canvas -->
         <div ref="grafikDOM" class="w-full h-80 mt-4"></div>
       </div>
 
-      <!-- WIDGET: DETAIL KETERSEDIAAN BAHAN -->
       <div
         class="bg-[#fffbf7] rounded-3xl p-6 shadow-sm border border-[#f0ce97] border-opacity-40 overflow-hidden"
       >
@@ -148,6 +176,14 @@
                   </span>
                 </td>
               </tr>
+              <tr v-if="listBahanBaku.length === 0">
+                <td
+                  colspan="5"
+                  class="p-8 text-center text-gray-400 text-sm italic"
+                >
+                  Belum ada data bahan baku untuk cabang ini.
+                </td>
+              </tr>
             </tbody>
           </table>
         </div>
@@ -157,8 +193,29 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted } from "vue";
-import * as echarts from "echarts"; // Murni menggunakan ECharts
+import { ref, onMounted, onUnmounted, watch } from "vue";
+import * as echarts from "echarts";
+
+// --- MANAJEMEN ROLE & CABANG ---
+const getUserData = () => {
+  const userData = localStorage.getItem("user");
+  if (userData) {
+    return JSON.parse(userData);
+  }
+  return { id_cabang: 1, role: "admin" }; // Fallback aman
+};
+
+const currentUser = getUserData();
+
+// Pengecekan Super Admin yang kebal terhadap cache lama
+const isSuperAdmin = ref(
+  currentUser.id_cabang === null ||
+    currentUser.id_cabang === undefined ||
+    currentUser.id_cabang === "",
+);
+
+// Jika SuperAdmin, default filter null. Jika Admin Cabang, terkunci ke cabangnya.
+const activeCabang = ref(currentUser.id_cabang || null);
 
 // --- DATA REAKTIF ---
 const listBahanBaku = ref([]);
@@ -168,10 +225,17 @@ const topMenu = ref([]);
 const grafikDOM = ref(null);
 let myChart = null;
 
+// Pantau perubahan pada dropdown cabang. Jika berubah, fetch ulang datanya!
+watch(activeCabang, () => {
+  refreshSemuaData();
+});
+
 // --- FUNGSI 1: MENGAMBIL DATA TABEL BAHAN BAKU ---
 const ambilDataBahan = async () => {
   try {
-    const response = await fetch("http://localhost:3000/laporan/produksi");
+    const response = await fetch(
+      `http://localhost:3000/laporan/produksi?id_cabang=${activeCabang.value}`,
+    );
     if (response.ok) listBahanBaku.value = await response.json();
   } catch (error) {
     console.error("Gagal mengambil laporan bahan baku:", error);
@@ -181,23 +245,26 @@ const ambilDataBahan = async () => {
 // --- FUNGSI 2: MENGAMBIL DATA TOP 3 MENU ---
 const ambilTopMenu = async () => {
   try {
-    const response = await fetch("http://localhost:3000/laporan/top-menu");
+    const response = await fetch(
+      `http://localhost:3000/laporan/top-menu?id_cabang=${activeCabang.value}`,
+    );
     if (response.ok) topMenu.value = await response.json();
   } catch (error) {
     console.error("Gagal mengambil data top menu:", error);
   }
 };
 
-// --- FUNGSI 3: MENGGAMBAR GRAFIK ECHARTS (MODERN STACKED BAR) ---
+// --- FUNGSI 3: MENGGAMBAR GRAFIK ECHARTS ---
 const gambarGrafik = async () => {
   try {
-    const response = await fetch("http://localhost:3000/laporan/grafik");
+    const response = await fetch(
+      `http://localhost:3000/laporan/grafik?id_cabang=${activeCabang.value}`,
+    );
     const dataDariBackend = await response.json();
 
-    if (myChart) myChart.dispose(); // Bersihkan chart lama jika ada
+    if (myChart) myChart.dispose();
     myChart = echarts.init(grafikDOM.value);
 
-    // PENGECEKAN ERROR LEBIH SOLID:
     if (!Array.isArray(dataDariBackend) || dataDariBackend.length === 0) {
       const pesanTengah = dataDariBackend.error
         ? `Error Backend: ${dataDariBackend.error}`
@@ -214,26 +281,22 @@ const gambarGrafik = async () => {
       return;
     }
 
-    // --- SOLUSI: TRANSLASI DATA ---
-    // Menerjemahkan data 'Chart.js' dari backend menjadi format 'ECharts'
     const seriesECharts = dataDariBackend.map((item) => {
       return {
-        name: item.name || item.label, // Jika backend pakai 'label', kita jadikan 'name'
-        type: item.type || "bar", // Wajib ada 'type' di ECharts
-        stack: "Total", // Agar grafiknya bertumpuk (Stacked)
+        name: item.name || item.label,
+        type: item.type || "bar",
+        stack: "Total",
         data: item.data || [],
       };
     });
 
-    // Ekstrak nama bahan untuk Legend (sekarang aman karena item.name pasti ada)
     const legendData = seriesECharts.map((item) => item.name);
 
     const option = {
-      // Warna palet premium tema Kopi
       color: ["#c28147", "#5c3a21", "#8b5a33", "#e5b976", "#a66a35", "#d4a373"],
       tooltip: {
         trigger: "axis",
-        axisPointer: { type: "shadow" }, // Efek bayangan kotak saat di-hover (Modern)
+        axisPointer: { type: "shadow" },
         backgroundColor: "rgba(255, 255, 255, 0.95)",
         borderColor: "#e5b976",
         textStyle: { color: "#4a2f1d" },
@@ -242,7 +305,7 @@ const gambarGrafik = async () => {
         data: legendData,
         top: "0%",
         textStyle: { color: "#8b5a33", fontWeight: "bold" },
-        icon: "roundRect", // Ikon kotak membulat
+        icon: "roundRect",
       },
       grid: {
         left: "2%",
@@ -277,7 +340,6 @@ const gambarGrafik = async () => {
         },
         axisLabel: { color: "#8b5a33" },
       },
-      // Masukkan data yang sudah diterjemahkan
       series: seriesECharts,
     };
 
@@ -287,13 +349,16 @@ const gambarGrafik = async () => {
   }
 };
 
-// --- LIFECYCLE VUE ---
-onMounted(() => {
+// --- FUNGSI REFRESH SEMUA ---
+const refreshSemuaData = () => {
   ambilDataBahan();
   ambilTopMenu();
   gambarGrafik();
+};
 
-  // Agar grafik responsive otomatis ketika ukuran layar / browser diubah
+// --- LIFECYCLE VUE ---
+onMounted(() => {
+  refreshSemuaData();
   window.addEventListener("resize", () => {
     if (myChart) myChart.resize();
   });

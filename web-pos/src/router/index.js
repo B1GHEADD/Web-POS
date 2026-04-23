@@ -1,4 +1,5 @@
 import { createRouter, createWebHistory } from "vue-router";
+import Swal from "sweetalert2"; // Import SweetAlert2
 import LoginView from "@/views/LoginView.vue";
 import DashboardView from "../views/DashboardView.vue";
 import RiderView from "@/views/RiderView.vue";
@@ -48,7 +49,9 @@ const router = createRouter({
   ],
 });
 
-// --- SATPAM PENJAGA ROUTE (NAVIGATION GUARD) ---
+// ==========================================
+// SATPAM PENJAGA ROUTE (NAVIGATION GUARD)
+// ==========================================
 router.beforeEach((to, from, next) => {
   // Ambil data user dari penyimpanan browser
   const userData = localStorage.getItem("user");
@@ -64,34 +67,69 @@ router.beforeEach((to, from, next) => {
     return next("/dashboard");
   }
 
-  // 3. PEMBATASAN BERDASARKAN ROLE
+  // 3. PEMBATASAN BERDASARKAN ROLE & CABANG
   if (user) {
+    // Kita anggap null, undefined, atau string kosong sebagai Super Admin agar lebih kebal
+    const isSuperAdmin =
+      user.role === "admin" &&
+      (user.id_cabang === null ||
+        user.id_cabang === undefined ||
+        user.id_cabang === "");
+
+    // --- ROLE SUPER ADMIN PUSAT ---
+    if (isSuperAdmin) {
+      // Super Admin hanya pantau data, DILARANG masuk ke produksi atau kasir rider
+      const allowedSuperAdminPaths = [
+        "/dashboard",
+        "/laporan-produksi",
+        "/laporan-penjualan",
+        "/laporan-keuangan",
+      ];
+      if (!allowedSuperAdminPaths.includes(to.path)) {
+        Swal.fire({
+          icon: "error",
+          title: "Akses Ditolak",
+          text: "Super Admin hanya dapat mengakses halaman Laporan & Dashboard Pusat.",
+          confirmButtonColor: "#8b5a33",
+        });
+        return next("/dashboard");
+      }
+    }
+
+    // --- ROLE ADMIN CABANG ---
+    // Admin cabang (role 'admin' dengan id_cabang terisi) tidak dibatasi di else ini, bebas ke mana saja di cabangnya.
+
     // --- ROLE RIDER ---
-    if (user.role === "rider") {
-      // Daftar halaman yang BOLEH diakses Rider
+    else if (user.role === "rider") {
       const allowedRiderPaths = ["/dashboard", "/rider", "/laporan-penjualan"];
       if (!allowedRiderPaths.includes(to.path)) {
-        alert("Akses Ditolak: Halaman ini bukan untuk akses Rider!");
+        Swal.fire({
+          icon: "error",
+          title: "Akses Ditolak",
+          text: "Halaman ini bukan untuk akses Rider!",
+          confirmButtonColor: "#8b5a33",
+        });
         return next("/dashboard");
       }
     }
 
     // --- ROLE PRODUKSI ---
-    if (user.role === "produksi") {
-      // Daftar halaman yang BOLEH diakses Tim Produksi
+    else if (user.role === "produksi") {
       const allowedProduksiPaths = [
         "/dashboard",
         "/produksi",
         "/laporan-produksi",
       ];
       if (!allowedProduksiPaths.includes(to.path)) {
-        alert("Akses Ditolak: Halaman ini khusus Tim Produksi & Admin!");
+        Swal.fire({
+          icon: "error",
+          title: "Akses Ditolak",
+          text: "Halaman ini khusus Tim Produksi & Admin!",
+          confirmButtonColor: "#8b5a33",
+        });
         return next("/dashboard");
       }
     }
-
-    // --- ROLE ADMIN ---
-    // Admin bebas ke mana saja, jadi tidak ada blokir untuk admin.
   }
 
   // Jika lolos semua pemeriksaan di atas, silakan masuk (buka pintu)

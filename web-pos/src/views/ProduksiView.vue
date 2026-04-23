@@ -3,7 +3,6 @@
     class="flex-1 flex flex-col p-4 md:p-8 overflow-y-auto w-full h-full bg-[#fcf9f5]"
   >
     <div class="max-w-6xl mx-auto w-full space-y-8">
-      <!-- HEADER -->
       <div
         class="flex flex-col md:flex-row justify-between items-start md:items-end border-b border-[#e5b976] pb-4 gap-4"
       >
@@ -17,15 +16,10 @@
         </div>
       </div>
 
-      <!-- KONTEN UTAMA: 2 KARTU -->
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        <!-- ========================================== -->
-        <!-- KARTU KIRI: INPUT BAHAN BAKU (MASUK) -->
-        <!-- ========================================== -->
         <div
           class="bg-white rounded-3xl p-6 md:p-8 shadow-sm border border-[#f0ce97] border-opacity-50 hover:shadow-md transition-shadow duration-300 flex flex-col relative overflow-hidden"
         >
-          <!-- Hiasan Sudut -->
           <div
             class="absolute -right-6 -top-6 bg-[#fdf5e6] w-24 h-24 rounded-full opacity-50 pointer-events-none"
           ></div>
@@ -58,7 +52,6 @@
           </div>
 
           <div class="space-y-5 flex-1 relative z-10">
-            <!-- Row 1: Tanggal & Nama -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
               <div class="space-y-1.5">
                 <label class="block text-sm font-bold text-gray-600"
@@ -90,7 +83,6 @@
               </div>
             </div>
 
-            <!-- Row 2: Jumlah & Satuan -->
             <div class="space-y-1.5">
               <label class="block text-sm font-bold text-gray-600"
                 >Jumlah & Satuan</label
@@ -114,7 +106,6 @@
               </div>
             </div>
 
-            <!-- Row 3: Harga Beli -->
             <div class="space-y-1.5">
               <label class="block text-sm font-bold text-gray-600"
                 >Total Harga Beli (Rp)</label
@@ -133,7 +124,6 @@
               </div>
             </div>
 
-            <!-- Row 4: Expired -->
             <div class="space-y-1.5 pb-4">
               <label class="block text-sm font-bold text-gray-600"
                 >Tanggal Kedaluwarsa (Expired)</label
@@ -169,9 +159,6 @@
           </div>
         </div>
 
-        <!-- ========================================== -->
-        <!-- KARTU KANAN: PRODUKSI KOPI (RESEP) -->
-        <!-- ========================================== -->
         <div
           class="bg-white rounded-3xl p-6 md:p-8 shadow-sm border border-[#f0ce97] border-opacity-50 hover:shadow-md transition-shadow duration-300 flex flex-col relative overflow-hidden"
         >
@@ -226,7 +213,6 @@
             </div>
 
             <div class="space-y-5 flex-1">
-              <!-- Tanggal Dibuat & Expired -->
               <div class="grid grid-cols-2 gap-4">
                 <div class="space-y-1.5">
                   <label
@@ -253,7 +239,6 @@
                 </div>
               </div>
 
-              <!-- Menu Dibuat -->
               <div class="space-y-1.5">
                 <label class="block text-sm font-bold text-gray-600"
                   >Menu yang Dibuat</label
@@ -275,7 +260,6 @@
                 </select>
               </div>
 
-              <!-- Jumlah Porsi -->
               <div class="space-y-1.5 pb-4">
                 <label class="block text-sm font-bold text-gray-600"
                   >Jumlah Porsi</label
@@ -292,7 +276,6 @@
               </div>
             </div>
 
-            <!-- Tombol Eksekusi -->
             <button
               @click="simpanProduksi"
               :disabled="isProduksiLoading"
@@ -323,6 +306,17 @@
 
 <script setup>
 import { ref, computed, onMounted } from "vue";
+import Swal from "sweetalert2";
+
+// AMBIL ID CABANG DARI LOCALSTORAGE
+const getUserData = () => {
+  const userData = localStorage.getItem("user");
+  if (userData) {
+    return JSON.parse(userData);
+  }
+  return { id_cabang: 1 }; // Fallback jika belum login (default ke Cabang 1)
+};
+const idCabang = getUserData().id_cabang;
 
 // --- FUNGSI AMBIL TANGGAL LOKAL (ANTI UTC BUG) ---
 const getTanggalLokal = () => {
@@ -372,6 +366,7 @@ const tanggalExpired = computed(() => {
 // ==========================================
 const ambilDataMenu = async () => {
   try {
+    // Menu produk bersifat global, tidak perlu id_cabang
     const res = await fetch("http://localhost:3000/list-menu-produksi");
     const data = await res.json();
     listMenu.value = data;
@@ -382,7 +377,10 @@ const ambilDataMenu = async () => {
 
 const ambilDataBahan = async () => {
   try {
-    const res = await fetch("http://localhost:3000/list-bahan-baku");
+    // Tambahkan parameter id_cabang untuk mengambil bahan baku milik cabang ini saja
+    const res = await fetch(
+      `http://localhost:3000/list-bahan-baku?id_cabang=${idCabang}`,
+    );
     const data = await res.json();
     listBahan.value = data;
   } catch (err) {
@@ -402,12 +400,22 @@ const simpanRestock = async () => {
     !hargaBahanMasuk.value ||
     !expiredBahanMasuk.value
   ) {
-    alert("⚠️ Gagal menyimpan! Harap lengkapi semua data input bahan baku.");
+    Swal.fire({
+      icon: "warning",
+      title: "Data Tidak Lengkap",
+      text: "Harap lengkapi semua data input bahan baku.",
+      confirmButtonColor: "#c28147",
+    });
     return;
   }
 
   if (jumlahBahanMasuk.value <= 0 || hargaBahanMasuk.value <= 0) {
-    alert("⚠️ Jumlah Stok dan Harga harus lebih dari 0.");
+    Swal.fire({
+      icon: "error",
+      title: "Input Tidak Valid",
+      text: "Jumlah Stok dan Harga harus lebih dari 0.",
+      confirmButtonColor: "#c28147",
+    });
     return;
   }
 
@@ -418,6 +426,7 @@ const simpanRestock = async () => {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
+        id_cabang: idCabang, // Kirim ID Cabang ke backend
         tanggal_input: tanggalInputBahan.value,
         nama_bahan: namaBahanMasuk.value,
         jumlah_masuk: jumlahBahanMasuk.value,
@@ -430,20 +439,33 @@ const simpanRestock = async () => {
     const hasil = await response.json();
 
     if (response.ok) {
-      alert(
-        `✅ Berhasil!\nStok ${namaBahanMasuk.value} telah ditambahkan ke gudang.`,
-      );
+      Swal.fire({
+        icon: "success",
+        title: "Berhasil!",
+        text: `Stok ${namaBahanMasuk.value} telah ditambahkan ke gudang.`,
+        confirmButtonColor: "#c28147",
+      });
+      // Reset Form
       namaBahanMasuk.value = "";
       jumlahBahanMasuk.value = null;
       satuanBahanMasuk.value = "";
       hargaBahanMasuk.value = null;
       expiredBahanMasuk.value = "";
     } else {
-      alert(`❌ Gagal: ${hasil.error || "Gagal memperbarui database"}`);
+      Swal.fire({
+        icon: "error",
+        title: "Gagal",
+        text: hasil.error || "Gagal memperbarui database",
+        confirmButtonColor: "#c28147",
+      });
     }
   } catch (error) {
     console.error("Error simpan restock:", error);
-    alert("❌ Terjadi kesalahan koneksi ke server backend.");
+    Swal.fire({
+      icon: "error",
+      title: "Kesalahan Koneksi",
+      text: "Terjadi kesalahan koneksi ke server backend.",
+    });
   } finally {
     isRestockLoading.value = false;
   }
@@ -459,16 +481,27 @@ const simpanProduksi = async () => {
     !jumlahProduksi.value ||
     jumlahProduksi.value <= 0
   ) {
-    alert(
-      "⚠️ Gagal menyimpan! Harap isi Tanggal Produksi, Pilih Menu, dan Jumlah Porsi.",
-    );
+    Swal.fire({
+      icon: "warning",
+      title: "Data Belum Lengkap",
+      text: "Harap isi Tanggal Produksi, Pilih Menu, dan Jumlah Porsi.",
+      confirmButtonColor: "#5c3a21",
+    });
     return;
   }
 
-  const yakin = confirm(
-    `Apakah Anda yakin ingin memproduksi ${jumlahProduksi.value} Cup ${menuDibuat.value}?`,
-  );
-  if (!yakin) return;
+  const confirmResult = await Swal.fire({
+    title: "Konfirmasi Produksi",
+    text: `Apakah Anda yakin ingin memproduksi ${jumlahProduksi.value} Cup ${menuDibuat.value}?`,
+    icon: "question",
+    showCancelButton: true,
+    confirmButtonColor: "#5c3a21",
+    cancelButtonColor: "#d33",
+    confirmButtonText: "Ya, Eksekusi!",
+    cancelButtonText: "Batal",
+  });
+
+  if (!confirmResult.isConfirmed) return;
 
   isProduksiLoading.value = true;
 
@@ -477,6 +510,7 @@ const simpanProduksi = async () => {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
+        id_cabang: idCabang, // Kirim ID Cabang ke backend
         nama_produk: menuDibuat.value,
         jumlah_produksi: jumlahProduksi.value,
       }),
@@ -485,29 +519,39 @@ const simpanProduksi = async () => {
     const hasil = await response.json();
 
     if (response.ok) {
-      alert(`✅ Berhasil!\n${hasil.message || "Stok berhasil dipotong."}`);
+      Swal.fire({
+        icon: "success",
+        title: "Produksi Berhasil",
+        text: hasil.message || "Stok berhasil dipotong.",
+        confirmButtonColor: "#5c3a21",
+      });
       menuDibuat.value = "";
       jumlahProduksi.value = null;
     } else {
+      let detailHtml = "";
       if (hasil.detail && hasil.detail.length > 0) {
-        alert(
-          `❌ Gagal: ${hasil.error}\n\nDetail:\n- ${hasil.detail.join("\n- ")}`,
-        );
-      } else {
-        alert(`❌ Gagal: ${hasil.error || "Terjadi kesalahan"}`);
+        detailHtml = `<ul style="text-align: left; margin-top: 10px;">${hasil.detail.map((d) => `<li>• ${d}</li>`).join("")}</ul>`;
       }
+
+      Swal.fire({
+        icon: "error",
+        title: "Produksi Gagal",
+        html: `<span>${hasil.error}</span>${detailHtml}`,
+        confirmButtonColor: "#5c3a21",
+      });
     }
   } catch (error) {
     console.error("Error saat simpan produksi:", error);
-    alert("❌ Terjadi kesalahan koneksi ke server backend.");
+    Swal.fire({
+      icon: "error",
+      title: "Kesalahan Server",
+      text: "Terjadi kesalahan koneksi ke server backend.",
+    });
   } finally {
     isProduksiLoading.value = false;
   }
 };
 
-// ==========================================
-// JALANKAN SAAT HALAMAN PERTAMA DIBUKA
-// ==========================================
 onMounted(() => {
   ambilDataMenu();
   ambilDataBahan();

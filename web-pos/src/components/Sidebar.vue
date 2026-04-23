@@ -2,7 +2,6 @@
   <aside
     class="w-64 bg-[#4a2f1d] text-white flex flex-col h-screen transition-all duration-300 shadow-2xl z-20 flex-shrink-0"
   >
-    <!-- Logo Brand -->
     <div class="p-6 border-b border-[#5c3a21] flex items-center gap-3">
       <div
         class="w-10 h-10 rounded-full bg-[#fdf5e6] flex items-center justify-center text-[#8b5a33] font-bold shadow-inner"
@@ -16,7 +15,6 @@
       </div>
     </div>
 
-    <!-- Info User Login -->
     <div class="px-6 py-4 bg-[#3e2511] text-xs">
       <p class="text-gray-400 mb-0.5">Login sebagai:</p>
       <p class="font-bold text-[#e5b976] uppercase">
@@ -25,11 +23,9 @@
       </p>
     </div>
 
-    <!-- Menu Navigasi -->
     <nav
       class="flex-1 overflow-y-auto py-4 space-y-1.5 px-3 scrollbar-thin scrollbar-thumb-[#5c3a21]"
     >
-      <!-- Menu Dashboard (Semua Role Bisa Akses) -->
       <router-link
         to="/dashboard"
         class="flex items-center gap-3 px-4 py-3 rounded-xl transition-colors hover:bg-[#5c3a21] text-gray-200 hover:text-white"
@@ -52,7 +48,6 @@
         Dashboard
       </router-link>
 
-      <!-- Menu Rider POS (Hanya Admin & Rider) -->
       <router-link
         v-if="userRole === 'admin' || userRole === 'rider'"
         to="/rider"
@@ -76,7 +71,6 @@
         Rider POS
       </router-link>
 
-      <!-- Menu Produksi (Hanya Admin & Produksi) -->
       <router-link
         v-if="userRole === 'admin' || userRole === 'produksi'"
         to="/produksi"
@@ -106,7 +100,6 @@
         Laporan
       </div>
 
-      <!-- Laporan Penjualan (Hanya Admin & Rider) -->
       <router-link
         v-if="userRole === 'admin' || userRole === 'rider'"
         to="/laporan-penjualan"
@@ -116,7 +109,6 @@
         Penjualan Rider
       </router-link>
 
-      <!-- Laporan Produksi (Hanya Admin & Produksi) -->
       <router-link
         v-if="userRole === 'admin' || userRole === 'produksi'"
         to="/laporan-produksi"
@@ -126,7 +118,6 @@
         Stok & Produksi
       </router-link>
 
-      <!-- Laporan Keuangan (Hanya Admin) -->
       <router-link
         v-if="userRole === 'admin'"
         to="/laporan-keuangan"
@@ -137,7 +128,6 @@
       </router-link>
     </nav>
 
-    <!-- Tombol Logout -->
     <div class="p-4 border-t border-[#5c3a21]">
       <button
         @click="logout"
@@ -166,6 +156,7 @@
 <script setup>
 import { ref, onMounted } from "vue";
 import { useRouter } from "vue-router";
+import Swal from "sweetalert2"; // Import SweetAlert2
 
 const router = useRouter();
 
@@ -183,10 +174,20 @@ onMounted(() => {
   }
 });
 
-// Fungsi Logout: Hapus saku (localStorage) dan kembali ke halaman Login (/)
-const logout = () => {
-  const konfirmasi = confirm("Apakah Anda yakin ingin keluar dari aplikasi?");
-  if (konfirmasi) {
+// Fungsi Logout: Menggunakan SweetAlert2 untuk konfirmasi elegan
+const logout = async () => {
+  const result = await Swal.fire({
+    title: "Keluar Sistem?",
+    text: "Apakah Anda yakin ingin keluar dari aplikasi?",
+    icon: "warning",
+    showCancelButton: true,
+    confirmButtonColor: "#8b5a33", // Warna coklat Kupi Kita
+    cancelButtonColor: "#d33",
+    confirmButtonText: "Ya, Keluar!",
+    cancelButtonText: "Batal",
+  });
+
+  if (result.isConfirmed) {
     localStorage.removeItem("user");
     router.push("/");
   }

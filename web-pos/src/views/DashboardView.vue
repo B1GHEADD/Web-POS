@@ -3,7 +3,6 @@
     class="flex-1 flex flex-col p-4 md:p-6 overflow-y-auto w-full h-full bg-[#fcf9f5]"
   >
     <div class="max-w-7xl mx-auto w-full space-y-6">
-      <!-- HEADER -->
       <div
         class="flex flex-col md:flex-row justify-between items-start md:items-end border-b border-[#e5b976] pb-4 gap-4"
       >
@@ -15,31 +14,62 @@
             Ringkasan performa dan pantauan sistem Kupi Kita hari ini
           </p>
         </div>
-        <button
-          @click="refreshSemua"
-          class="bg-white border border-[#e5b976] hover:bg-[#fdf5e6] text-[#8b5a33] px-4 py-2 rounded-lg text-sm font-bold shadow-sm transition-colors flex items-center gap-2"
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            class="h-4 w-4"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
+
+        <div class="flex items-center gap-3 w-full md:w-auto">
+          <div v-if="isSuperAdmin" class="relative flex-1 md:flex-none">
+            <select
+              v-model="activeCabang"
+              class="w-full bg-white border border-[#e5b976] text-[#4a2f1d] rounded-lg pl-4 pr-10 py-2.5 focus:outline-none focus:ring-2 focus:ring-[#c28147] shadow-sm font-bold appearance-none cursor-pointer"
+            >
+              <option :value="null">🌍 Seluruh Cabang</option>
+              <option :value="1">🏢 Cabang Sudirman</option>
+              <option :value="2">🏢 Cabang Kemang</option>
+              <option :value="3">🏢 Cabang Tebet</option>
+            </select>
+            <div
+              class="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none text-[#8b5a33]"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                class="h-4 w-4"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M19 9l-7 7-7-7"
+                />
+              </svg>
+            </div>
+          </div>
+
+          <button
+            @click="refreshSemua"
+            class="bg-white border border-[#e5b976] hover:bg-[#fdf5e6] text-[#8b5a33] px-4 py-2.5 rounded-lg text-sm font-bold shadow-sm transition-colors flex items-center justify-center gap-2 whitespace-nowrap"
           >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
-            />
-          </svg>
-          Refresh Data
-        </button>
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              class="h-4 w-4"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+              />
+            </svg>
+            Refresh Data
+          </button>
+        </div>
       </div>
 
-      <!-- 1. KPI (HIGHLIGHT HARI INI) - Diubah jadi 3 Kolom -->
       <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <!-- Card Omset -->
         <div
           class="bg-gradient-to-br from-[#8b5a33] to-[#5c3a21] rounded-2xl p-6 shadow-md text-white flex flex-col justify-between h-36 relative overflow-hidden transition-transform hover:-translate-y-1"
         >
@@ -67,7 +97,6 @@
           </h3>
         </div>
 
-        <!-- Card Terjual -->
         <div
           class="bg-white border border-[#e5b976] rounded-2xl p-6 shadow-sm flex flex-col justify-between h-36 transition-transform hover:-translate-y-1"
         >
@@ -80,7 +109,6 @@
           </div>
         </div>
 
-        <!-- Card Stok Kulkas -->
         <div
           class="bg-white border border-[#e5b976] rounded-2xl p-6 shadow-sm flex flex-col justify-between h-36 transition-transform hover:-translate-y-1"
         >
@@ -96,7 +124,6 @@
         </div>
       </div>
 
-      <!-- 2. GRAFIK TREN PENJUALAN (MODERN MINIMALIS ECHARTS) -->
       <div
         class="bg-[#fffbf7] rounded-3xl p-6 shadow-sm border border-[#f0ce97] border-opacity-40"
       >
@@ -115,11 +142,9 @@
           </svg>
           Tren Omset (7 Hari Terakhir)
         </h2>
-        <!-- Wadah untuk Chart -->
         <div ref="chartDOM" class="w-full h-72 mt-4"></div>
       </div>
 
-      <!-- 3. PERINGATAN SISTEM (ALERTS) -->
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div
           class="bg-red-50 rounded-3xl p-6 shadow-sm border border-red-200 flex flex-col"
@@ -139,7 +164,7 @@
                 clip-rule="evenodd"
               />
             </svg>
-            Peringatan: Stok Bahan Kritis (< 2000)
+            Stok Bahan Kritis (< 2000)
           </h2>
           <ul v-if="stokKritis.length > 0" class="space-y-2 flex-1">
             <li
@@ -160,7 +185,7 @@
             v-else
             class="flex-1 flex items-center justify-center text-sm text-green-600 font-medium italic py-4"
           >
-            ✅ Semua stok bahan baku dalam batas aman.
+            ✅ Semua aman.
           </div>
         </div>
 
@@ -182,7 +207,7 @@
                 clip-rule="evenodd"
               />
             </svg>
-            Peringatan: Hampir Expired (< 30 Hari)
+            Hampir Expired (< 30 Hari)
           </h2>
           <ul v-if="peringatanExpired.length > 0" class="space-y-2 flex-1">
             <li
@@ -208,12 +233,11 @@
             v-else
             class="flex-1 flex items-center justify-center text-sm text-green-600 font-medium italic py-4"
           >
-            ✅ Tidak ada bahan baku yang mendekati masa kedaluwarsa.
+            ✅ Semua aman.
           </div>
         </div>
       </div>
 
-      <!-- 4. LIVE TRACKING TAS RIDER -->
       <div
         class="bg-[#fffbf7] rounded-3xl p-6 shadow-sm border border-[#f0ce97] border-opacity-40"
       >
@@ -228,43 +252,26 @@
               class="relative inline-flex rounded-full h-3 w-3 bg-green-500"
             ></span>
           </span>
-          Live Tracking: Tas Rider Hari Ini
+          Live Tracking: Tas Rider
         </h2>
-
         <div
           class="overflow-x-auto rounded-xl border border-[#e5b976] shadow-sm"
         >
           <table class="w-full text-left border-collapse min-w-[600px]">
             <thead>
-              <tr class="bg-[#f4e8d8] text-[#8b5a33] text-sm tracking-wide">
-                <th class="py-4 px-5 font-bold border-b border-[#e5b976]">
-                  Rider
-                </th>
-                <th class="py-4 px-5 font-bold border-b border-[#e5b976]">
-                  Produk Dibawa
-                </th>
-                <th
-                  class="py-4 px-5 font-bold text-center border-b border-[#e5b976]"
-                >
-                  Stok Awal
-                </th>
-                <th
-                  class="py-4 px-5 font-bold text-center border-b border-[#e5b976]"
-                >
-                  Sudah Laku
-                </th>
-                <th
-                  class="py-4 px-5 font-bold text-center border-b border-[#e5b976]"
-                >
-                  Sisa di Tas
-                </th>
+              <tr class="bg-[#f4e8d8] text-[#8b5a33] text-sm">
+                <th class="py-4 px-5 font-bold">Rider</th>
+                <th class="py-4 px-5 font-bold">Produk</th>
+                <th class="py-4 px-5 font-bold text-center">Stok Awal</th>
+                <th class="py-4 px-5 font-bold text-center">Sudah Laku</th>
+                <th class="py-4 px-5 font-bold text-center">Sisa</th>
               </tr>
             </thead>
             <tbody class="bg-white">
               <tr
                 v-for="(rider, index) in liveTracking"
                 :key="index"
-                class="border-b border-gray-100 last:border-0 hover:bg-[#fdf5e6] transition-colors"
+                class="border-b border-gray-100 hover:bg-[#fdf5e6] transition-colors"
               >
                 <td class="py-4 px-5 text-sm font-extrabold text-[#4a2f1d]">
                   {{ rider.nama_rider }}
@@ -295,7 +302,7 @@
                   colspan="5"
                   class="p-8 text-center text-gray-400 text-sm italic"
                 >
-                  Belum ada Rider yang membawa kopi hari ini.
+                  Belum ada data hari ini.
                 </td>
               </tr>
             </tbody>
@@ -307,21 +314,37 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted } from "vue";
+import { ref, onMounted, onUnmounted, watch } from "vue";
 import * as echarts from "echarts";
 
-// --- STATE ---
-const kpi = ref({ omset: 0, terjual: 0, stokKulkas: 0 }); // Rider aktif dihapus dari default
+// --- MANAJEMEN ROLE & CABANG ---
+const getUserData = () => {
+  const userData = localStorage.getItem("user");
+  if (userData) {
+    return JSON.parse(userData);
+  }
+  return { id_cabang: 1, role: "admin" };
+};
+
+const currentUser = getUserData();
+const isSuperAdmin = ref(currentUser.id_cabang === null);
+const activeCabang = ref(currentUser.id_cabang);
+
+// Jika dropdown cabang diubah, langsung refresh seluruh data dashboard
+watch(activeCabang, () => {
+  refreshSemua();
+});
+
+// --- DATA STATE ---
+const kpi = ref({ omset: 0, terjual: 0, stokKulkas: 0 });
 const stokKritis = ref([]);
 const peringatanExpired = ref([]);
 const liveTracking = ref([]);
 const dataGrafik = ref([]);
 
-// Referensi DOM untuk Chart
 const chartDOM = ref(null);
 let myChart = null;
 
-// --- FORMAT RUPIAH ---
 const formatRupiah = (angka) => {
   if (!angka) return "Rp 0";
   return new Intl.NumberFormat("id-ID", {
@@ -331,32 +354,17 @@ const formatRupiah = (angka) => {
   }).format(angka);
 };
 
-// --- INISIALISASI ECHARTS ---
+// --- RENDER GRAFIK ---
 const renderChart = () => {
   if (myChart) myChart.dispose();
   myChart = echarts.init(chartDOM.value);
-
-  if (dataGrafik.value.length === 0) {
-    myChart.setOption({
-      title: {
-        text: "Belum ada data penjualan",
-        textStyle: { color: "#a1a1aa", fontSize: 14, fontStyle: "italic" },
-        left: "center",
-        top: "center",
-      },
-    });
-    return;
-  }
+  if (dataGrafik.value.length === 0) return;
 
   const option = {
     tooltip: {
       trigger: "axis",
-      backgroundColor: "rgba(255, 255, 255, 0.95)",
-      borderColor: "#e5b976",
-      textStyle: { color: "#4a2f1d" },
-      formatter: (params) => {
-        return `<div class="font-bold mb-1">${params[0].name}</div> Omset: <span class="font-extrabold text-[#8b5a33]">${formatRupiah(params[0].value)}</span>`;
-      },
+      formatter: (p) =>
+        `${p[0].name}<br/>Omset: <b>${formatRupiah(p[0].value)}</b>`,
     },
     grid: {
       left: "2%",
@@ -368,28 +376,15 @@ const renderChart = () => {
     xAxis: {
       type: "category",
       boundaryGap: false,
-      data: dataGrafik.value.map((item) => item.tanggal_format),
-      axisLine: { lineStyle: { color: "#e5b976" } },
-      axisLabel: { color: "#8b5a33", fontWeight: "bold" },
+      data: dataGrafik.value.map((i) => i.tanggal_format),
     },
-    yAxis: {
-      type: "value",
-      splitLine: {
-        lineStyle: { color: "#f0ce97", type: "dashed", opacity: 0.5 },
-      },
-      axisLabel: {
-        color: "#8b5a33",
-        formatter: (value) => (value >= 1000 ? value / 1000 + "k" : value),
-      },
-    },
+    yAxis: { type: "value", splitLine: { lineStyle: { type: "dashed" } } },
     series: [
       {
-        data: dataGrafik.value.map((item) => item.omset),
+        data: dataGrafik.value.map((i) => i.omset),
         type: "line",
         smooth: true,
-        symbolSize: 8,
         lineStyle: { color: "#c28147", width: 3 },
-        itemStyle: { color: "#c28147", borderWidth: 2, borderColor: "#fff" },
         areaStyle: {
           color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
             { offset: 0, color: "rgba(194, 129, 71, 0.4)" },
@@ -399,57 +394,46 @@ const renderChart = () => {
       },
     ],
   };
-
   myChart.setOption(option);
 };
 
-// --- FETCH DATA ---
+// --- FETCH DATA (DENGAN FILTER CABANG) ---
 const fetchKPI = async () => {
-  try {
-    const res = await fetch("http://localhost:3000/dashboard/kpi");
-    if (res.ok) kpi.value = await res.json();
-  } catch (err) {
-    console.error(err);
-  }
+  const res = await fetch(
+    `http://localhost:3000/dashboard/kpi?id_cabang=${activeCabang.value}`,
+  );
+  if (res.ok) kpi.value = await res.json();
 };
 
 const fetchGrafik = async () => {
-  try {
-    const res = await fetch("http://localhost:3000/dashboard/grafik-tren");
-    if (res.ok) {
-      dataGrafik.value = await res.json();
-      renderChart();
-    }
-  } catch (err) {
-    console.error(err);
+  const res = await fetch(
+    `http://localhost:3000/dashboard/grafik-tren?id_cabang=${activeCabang.value}`,
+  );
+  if (res.ok) {
+    dataGrafik.value = await res.json();
+    renderChart();
   }
 };
 
 const fetchStokKritis = async () => {
-  try {
-    const res = await fetch("http://localhost:3000/dashboard/stok-kritis");
-    if (res.ok) stokKritis.value = await res.json();
-  } catch (err) {
-    console.error(err);
-  }
+  const res = await fetch(
+    `http://localhost:3000/dashboard/stok-kritis?id_cabang=${activeCabang.value}`,
+  );
+  if (res.ok) stokKritis.value = await res.json();
 };
 
 const fetchExpired = async () => {
-  try {
-    const res = await fetch("http://localhost:3000/dashboard/expired");
-    if (res.ok) peringatanExpired.value = await res.json();
-  } catch (err) {
-    console.error(err);
-  }
+  const res = await fetch(
+    `http://localhost:3000/dashboard/expired?id_cabang=${activeCabang.value}`,
+  );
+  if (res.ok) peringatanExpired.value = await res.json();
 };
 
 const fetchLiveTracking = async () => {
-  try {
-    const res = await fetch("http://localhost:3000/dashboard/live-rider");
-    if (res.ok) liveTracking.value = await res.json();
-  } catch (err) {
-    console.error(err);
-  }
+  const res = await fetch(
+    `http://localhost:3000/dashboard/live-rider?id_cabang=${activeCabang.value}`,
+  );
+  if (res.ok) liveTracking.value = await res.json();
 };
 
 const refreshSemua = () => {
@@ -460,18 +444,13 @@ const refreshSemua = () => {
   fetchLiveTracking();
 };
 
-// --- LIFECYCLE ---
 onMounted(() => {
   refreshSemua();
-  window.addEventListener("resize", () => {
-    if (myChart) myChart.resize();
-  });
+  window.addEventListener("resize", () => myChart && myChart.resize());
 });
 
 onUnmounted(() => {
-  window.removeEventListener("resize", () => {
-    if (myChart) myChart.resize();
-  });
+  window.removeEventListener("resize", () => myChart && myChart.resize());
   if (myChart) myChart.dispose();
 });
 </script>
