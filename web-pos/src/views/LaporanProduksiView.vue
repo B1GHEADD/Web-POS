@@ -120,6 +120,12 @@
           >
             <thead>
               <tr class="bg-[#5c3a21] text-white tracking-wide">
+                <th
+                  v-if="activeCabang === null"
+                  class="p-4 font-semibold text-sm"
+                >
+                  Cabang
+                </th>
                 <th class="p-4 font-semibold text-sm">Nama Bahan Baku</th>
                 <th class="p-4 font-semibold text-sm">Sisa Stok</th>
                 <th class="p-4 font-semibold text-sm">Satuan</th>
@@ -133,6 +139,14 @@
                 :key="bahan.id"
                 class="border-b border-gray-100 hover:bg-[#fdf5e6] transition-colors last:border-0"
               >
+                <td v-if="activeCabang === null" class="p-4">
+                  <span
+                    class="px-2.5 py-1 text-[11px] font-extrabold text-[#8b5a33] bg-[#f4e8d8] border border-[#e5b976] rounded-md uppercase tracking-wider"
+                  >
+                    {{ getNamaCabang(bahan.id_cabang) }}
+                  </span>
+                </td>
+
                 <td class="p-4 font-bold">{{ bahan.nama_bahan }}</td>
                 <td
                   :class="[
@@ -170,6 +184,15 @@
                       bahan.status === 'Hampir Expired'
                         ? 'bg-red-50 text-red-700 border-red-200'
                         : '',
+                      bahan.status === 'Sudah Expired'
+                        ? 'bg-red-100 text-red-800 border-red-300'
+                        : '',
+                      bahan.status === 'Stok Hampir Habis'
+                        ? 'bg-orange-50 text-orange-700 border-orange-200'
+                        : '',
+                      bahan.status === 'Stok Masih Ada'
+                        ? 'bg-blue-50 text-blue-700 border-blue-200'
+                        : '',
                     ]"
                   >
                     {{ bahan.status }}
@@ -178,7 +201,7 @@
               </tr>
               <tr v-if="listBahanBaku.length === 0">
                 <td
-                  colspan="5"
+                  colspan="6"
                   class="p-8 text-center text-gray-400 text-sm italic"
                 >
                   Belum ada data bahan baku untuk cabang ini.
@@ -202,35 +225,45 @@ const getUserData = () => {
   if (userData) {
     return JSON.parse(userData);
   }
-  return { id_cabang: 1, role: "admin" }; // Fallback aman
+  return { id_cabang: 1, role: "admin" };
 };
 
 const currentUser = getUserData();
 
-// Pengecekan Super Admin yang kebal terhadap cache lama
 const isSuperAdmin = ref(
   currentUser.id_cabang === null ||
     currentUser.id_cabang === undefined ||
     currentUser.id_cabang === "",
 );
 
-// Jika SuperAdmin, default filter null. Jika Admin Cabang, terkunci ke cabangnya.
 const activeCabang = ref(currentUser.id_cabang || null);
+
+// --- FUNGSI TRANSLASI ID CABANG -> STRING ---
+const getNamaCabang = (id) => {
+  switch (id) {
+    case 1:
+      return "Sudirman";
+    case 2:
+      return "Kemang";
+    case 3:
+      return "Tebet";
+    default:
+      return "Pusat";
+  }
+};
 
 // --- DATA REAKTIF ---
 const listBahanBaku = ref([]);
 const topMenu = ref([]);
 
-// Referensi DOM untuk Chart ECharts
 const grafikDOM = ref(null);
 let myChart = null;
 
-// Pantau perubahan pada dropdown cabang. Jika berubah, fetch ulang datanya!
 watch(activeCabang, () => {
   refreshSemuaData();
 });
 
-// --- FUNGSI 1: MENGAMBIL DATA TABEL BAHAN BAKU ---
+// --- FUNGSI FETCH ---
 const ambilDataBahan = async () => {
   try {
     const response = await fetch(
@@ -242,7 +275,6 @@ const ambilDataBahan = async () => {
   }
 };
 
-// --- FUNGSI 2: MENGAMBIL DATA TOP 3 MENU ---
 const ambilTopMenu = async () => {
   try {
     const response = await fetch(
@@ -254,7 +286,6 @@ const ambilTopMenu = async () => {
   }
 };
 
-// --- FUNGSI 3: MENGGAMBAR GRAFIK ECHARTS ---
 const gambarGrafik = async () => {
   try {
     const response = await fetch(
@@ -349,14 +380,12 @@ const gambarGrafik = async () => {
   }
 };
 
-// --- FUNGSI REFRESH SEMUA ---
 const refreshSemuaData = () => {
   ambilDataBahan();
   ambilTopMenu();
   gambarGrafik();
 };
 
-// --- LIFECYCLE VUE ---
 onMounted(() => {
   refreshSemuaData();
   window.addEventListener("resize", () => {

@@ -22,6 +22,9 @@ db.connect((err) => {
   console.log("Berhasil terhubung ke database MySQL (Multi-Cabang Mode)!");
 });
 
+// ==========================================
+// FUNGSI BANTUAN (SATPAM CABANG)
+// ==========================================
 const getCabangFilter = (req) => {
   const id = req.query.id_cabang || req.body.id_cabang;
   if (id && id !== "null" && id !== "undefined") {
@@ -32,9 +35,12 @@ const getCabangFilter = (req) => {
 
 const getCabangId = (req) => {
   const id = req.query.id_cabang || req.body.id_cabang;
-  return id && id !== "null" && id !== "undefined" ? id : 1; // Default ke Cabang 1 jika error
+  return id && id !== "null" && id !== "undefined" ? id : 1;
 };
 
+// ==========================================
+// API LOGIN
+// ==========================================
 app.post("/login", (req, res) => {
   const { username, password } = req.body;
   const query =
@@ -54,6 +60,9 @@ app.post("/login", (req, res) => {
   });
 });
 
+// ==========================================
+// API DASHBOARD
+// ==========================================
 app.get("/dashboard/kpi", (req, res) => {
   const filter = getCabangFilter(req);
   const queryOmsetLaku = `SELECT SUM(total_pendapatan) as omset, SUM(terjual) as laku FROM log_penjualan WHERE DATE(tanggal) = CURDATE() ${filter}`;
@@ -128,6 +137,9 @@ app.get("/dashboard/grafik-tren", (req, res) => {
   });
 });
 
+// ==========================================
+// API LIST DROPDOWN
+// ==========================================
 app.get("/list-rider", (req, res) => {
   const filter = getCabangFilter(req);
   const query = `SELECT nama_lengkap AS nama_rider FROM users WHERE role = 'rider' ${filter}`;
@@ -146,6 +158,7 @@ app.get("/list-menu-produksi", (req, res) => {
 });
 
 app.get("/list-produk-tersedia", (req, res) => {
+  // Global, kulkas tidak terikat id_cabang secara spesifik jika sistemnya terpusat dari satu tempat kulkas
   const query = "SELECT nama_produk, stok_saat_ini FROM produk LIMIT 10";
   db.query(query, (err, results) => {
     if (err) return res.status(500).json({ error: err.message });
@@ -160,6 +173,175 @@ app.get("/list-bahan-baku", (req, res) => {
     if (err) return res.status(500).json({ error: err.message });
     res.json(results);
   });
+});
+
+// ==========================================
+// API TRANSAKSI RIDER POS (SUDAH DIKEMBALIKAN)
+// ==========================================
+
+// 1. Ambil data isi Box Rider
+app.get("/rider/box", (req, res) => {
+  const { nama_rider, tanggal, id_cabang } = req.query;
+  const cabangId = id_cabang && id_cabang !== "null" ? id_cabang : 1;
+
+  const query =
+    "SELECT nama_produk, stok_bawa, terjual FROM stok_rider WHERE nama_rider = ? AND tanggal = ? AND id_cabang = ?";
+
+  db.query(query, [nama_rider, tanggal, cabangId], (err, results) => {
+    if (err) return res.status(500).json({ error: err.message });
+    res.json(results);
+  });
+});
+
+// 2. Rider ambil Kopi dari Kulkas ke Box/Tas
+app.post("/rider/ambil-kulkas", (req, res) => {
+  const { nama_rider, tanggal, nama_produk, jumlah_diambil, id_cabang } =
+    req.body;
+  const cabangId = id_cabang && id_cabang !== "null" ? id_cabang : 1;
+
+  const queryCekKulkas =
+    "SELECT stok_saat_ini FROM produk WHERE nama_produk = ?";
+  db.query(queryCekKulkas, [nama_produk], (err, results) => {
+    if (err) return res.status(500).json({ error: err.message });
+    if (results.length === 0)
+      return res.status(404).json({ error: "Produk tidak ditemukan." });
+
+    const stokKulkas = results[0].stok_saat_ini;
+    if (stokKulkas < jumlah_diambil) {
+      return res
+        .status(400)
+        .json({ error: `Stok Kulkas kurang! Hanya sisa ${stokKulkas} cup.` });
+    }
+
+    const queryPotongKulkas =
+      "UPDATE produk SET stok_saat_ini = stok_saat_ini - ? WHERE nama_produk = ?";
+    db.query(queryPotongKulkas, [jumlah_diambil, nama_produk], (err) => {
+      if (err)
+        return res.status(500).json({ error: "Gagal memotong stok kulkas." });
+
+      const queryIsiBox = `
+        INSERT INTO stok_rider (id_cabang, tanggal, nama_rider, nama_produk, stok_bawa) 
+        VALUES (?, ?, ?, ?, ?)
+        ON DUPLICATE KEY UPDATE stok_bawa = stok_bawa + ?
+      `;
+      db.query(
+        queryIsiBox,
+        [
+          cabangId,
+          tanggal,
+          nama_rider,
+          nama_produk,
+          jumlah_diambil,
+          jumlah_diambil,
+        ],
+        (err) => {
+          if (err)
+            return res
+              .status(500)
+              .json({ error: "Gagal memindahkan ke box rider." });
+          res.json({
+            message: "Berhasil memindahkan barang dari kulkas ke box Rider.",
+          });
+        },
+      );
+    });
+  });
+});
+
+// 3. Rider kembalikan sisa Kopi ke Kulkas
+app.post("/rider/kembalikan-stok", (req, res) => {
+  const { nama_rider, tanggal, nama_produk, jumlah_dikembalikan, id_cabang } =
+    req.body;
+  const cabangId = id_cabang && id_cabang !== "null" ? id_cabang : 1;
+
+  const queryTambahKulkas =
+    "UPDATE produk SET stok_saat_ini = stok_saat_ini + ? WHERE nama_produk = ?";
+  db.query(queryTambahKulkas, [jumlah_dikembalikan, nama_produk], (err) => {
+    if (err)
+      return res.status(500).json({ error: "Gagal menambah stok kulkas." });
+
+    const queryPotongBox =
+      "UPDATE stok_rider SET stok_bawa = stok_bawa - ? WHERE nama_rider = ? AND tanggal = ? AND nama_produk = ? AND id_cabang = ?";
+    db.query(
+      queryPotongBox,
+      [jumlah_dikembalikan, nama_rider, tanggal, nama_produk, cabangId],
+      (err) => {
+        if (err)
+          return res
+            .status(500)
+            .json({ error: "Gagal memotong stok box rider." });
+        res.json({ message: "Berhasil mengembalikan sisa stok ke kulkas." });
+      },
+    );
+  });
+});
+
+// 4. Rider Setor Penjualan (Catat Laku)
+app.post("/rider/catat-laku", (req, res) => {
+  const { nama_rider, tanggal, nama_produk, terjual, id_cabang } = req.body;
+  const cabangId = id_cabang && id_cabang !== "null" ? id_cabang : 1;
+
+  const queryCekBox = `
+    SELECT p.harga_jual, sr.stok_bawa 
+    FROM stok_rider sr
+    JOIN produk p ON sr.nama_produk = p.nama_produk
+    WHERE sr.nama_rider = ? AND sr.tanggal = ? AND sr.nama_produk = ? AND sr.id_cabang = ?
+  `;
+
+  db.query(
+    queryCekBox,
+    [nama_rider, tanggal, nama_produk, cabangId],
+    (err, results) => {
+      if (err) return res.status(500).json({ error: err.message });
+      if (results.length === 0)
+        return res
+          .status(404)
+          .json({ error: "Barang tidak ada di Box Rider!" });
+
+      const boxRider = results[0];
+      if (boxRider.stok_bawa < terjual) {
+        return res.status(400).json({
+          error: `Gagal! Sisa ${nama_produk} di box hanya ${boxRider.stok_bawa} cup.`,
+        });
+      }
+
+      const total_pendapatan = terjual * boxRider.harga_jual;
+
+      const queryPotongBox =
+        "UPDATE stok_rider SET stok_bawa = stok_bawa - ?, terjual = terjual + ? WHERE nama_rider = ? AND tanggal = ? AND nama_produk = ? AND id_cabang = ?";
+      db.query(
+        queryPotongBox,
+        [terjual, terjual, nama_rider, tanggal, nama_produk, cabangId],
+        (err) => {
+          if (err)
+            return res
+              .status(500)
+              .json({ error: "Gagal memotong stok box rider." });
+
+          const queryLog =
+            "INSERT INTO log_penjualan (id_cabang, tanggal, nama_rider, nama_produk, terjual, total_pendapatan) VALUES (?, ?, ?, ?, ?, ?)";
+          db.query(
+            queryLog,
+            [
+              cabangId,
+              tanggal,
+              nama_rider,
+              nama_produk,
+              terjual,
+              total_pendapatan,
+            ],
+            (err) => {
+              if (err)
+                return res
+                  .status(500)
+                  .json({ error: "Gagal mencatat transaksi." });
+              res.json({ message: `Berhasil! Transaksi tersimpan.` });
+            },
+          );
+        },
+      );
+    },
+  );
 });
 
 app.get("/riwayat-hari-ini", (req, res) => {
@@ -177,75 +359,9 @@ app.get("/riwayat-hari-ini", (req, res) => {
   });
 });
 
-app.post("/penjualan-rider", (req, res) => {
-  const {
-    nama_rider,
-    tanggal,
-    nama_produk,
-    jumlah_diambil,
-    jumlah_dibawa,
-    terjual,
-    sisa,
-  } = req.body;
-  const id_cabang = getCabangId(req);
-
-  const queryCekProduk =
-    "SELECT harga_jual, stok_saat_ini FROM produk WHERE nama_produk = ?";
-  db.query(queryCekProduk, [nama_produk], (err, results) => {
-    if (err) return res.status(500).json({ error: err.message });
-    if (results.length === 0)
-      return res
-        .status(404)
-        .json({ error: "Produk tidak ditemukan di database!" });
-
-    const produk = results[0];
-    if (produk.stok_saat_ini < jumlah_diambil) {
-      return res.status(400).json({
-        error: `Stok tidak cukup! Sistem hanya mencatat sisa ${produk.stok_saat_ini} cup ${nama_produk}.`,
-      });
-    }
-
-    const total_pendapatan = terjual * produk.harga_jual;
-    const queryUpdateStok =
-      "UPDATE produk SET stok_saat_ini = stok_saat_ini - ? WHERE nama_produk = ?";
-
-    db.query(queryUpdateStok, [terjual, nama_produk], (err) => {
-      if (err)
-        return res
-          .status(500)
-          .json({ error: "Gagal memotong stok barang jadi." });
-
-      const queryLog = `
-        INSERT INTO log_penjualan (id_cabang, tanggal, nama_rider, nama_produk, jumlah_dibawa, terjual, sisa, total_pendapatan) 
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-      `;
-
-      db.query(
-        queryLog,
-        [
-          id_cabang,
-          tanggal,
-          nama_rider,
-          nama_produk,
-          jumlah_diambil,
-          terjual,
-          sisa,
-          total_pendapatan,
-        ],
-        (err) => {
-          if (err)
-            return res
-              .status(500)
-              .json({ error: "Gagal mencatat riwayat penjualan." });
-          res.json({
-            message: `Berhasil! ${terjual} cup terjual dengan pendapatan Rp ${total_pendapatan.toLocaleString("id-ID")}`,
-          });
-        },
-      );
-    });
-  });
-});
-
+// ==========================================
+// API PRODUKSI & INVENTARIS
+// ==========================================
 app.post("/produksi-menu", (req, res) => {
   const { nama_produk, jumlah_produksi } = req.body;
   const id_cabang = getCabangId(req);
@@ -354,6 +470,9 @@ app.post("/restock-bahan", (req, res) => {
   );
 });
 
+// ==========================================
+// API LAPORAN
+// ==========================================
 app.get("/laporan/grafik", (req, res) => {
   const filter = getCabangFilter(req);
   const query = `
@@ -397,8 +516,7 @@ app.get("/laporan/top-menu", (req, res) => {
 
 app.get("/laporan/produksi", (req, res) => {
   const filter = getCabangFilter(req);
-  const query = `SELECT id, nama_bahan, stok_awal, stok_saat_ini, satuan, harga_satuan, tgl_expired FROM bahan_baku WHERE 1=1 ${filter} ORDER BY tgl_expired ASC`;
-
+  const query = `SELECT id, id_cabang, nama_bahan, stok_awal, stok_saat_ini, satuan, harga_satuan, tgl_expired FROM bahan_baku WHERE 1=1 ${filter} ORDER BY tgl_expired ASC`;
   db.query(query, (err, results) => {
     if (err) return res.status(500).json({ error: err.message });
 
@@ -481,16 +599,26 @@ app.get("/laporan-penjualan/grafik", (req, res) => {
 
 app.get("/laporan-penjualan/riwayat", (req, res) => {
   const filter = getCabangFilter(req);
+
   const query = `
     SELECT 
-      DATE_FORMAT(tanggal, '%d-%m-%Y') AS waktu_format, nama_rider, nama_produk, 
-      SUM(jumlah_dibawa) AS jumlah_dibawa, SUM(terjual) AS terjual, (SUM(jumlah_dibawa) - SUM(terjual)) AS sisa, SUM(total_pendapatan) AS total_pendapatan
-    FROM log_penjualan WHERE terjual > 0 ${filter}
+      DATE_FORMAT(tanggal, '%d-%m-%Y') AS waktu_format, 
+      nama_rider, 
+      nama_produk, 
+      SUM(terjual) AS terjual, 
+      SUM(total_pendapatan) AS total_pendapatan
+    FROM log_penjualan 
+    WHERE terjual > 0 ${filter}
     GROUP BY tanggal, nama_rider, nama_produk
-    ORDER BY tanggal DESC, nama_rider ASC LIMIT 50
+    ORDER BY tanggal DESC, nama_rider ASC 
+    LIMIT 50
   `;
+
   db.query(query, (err, results) => {
-    if (err) return res.status(500).json({ error: err.message });
+    if (err) {
+      console.error("Error API Riwayat Penjualan:", err.message);
+      return res.status(500).json({ error: err.message });
+    }
     res.json(results);
   });
 });
