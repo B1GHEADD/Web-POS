@@ -81,8 +81,11 @@
 <script setup>
 import { ref } from "vue";
 import { useRouter } from "vue-router";
+import { useAuthStore } from "../stores/auth";
 
 const router = useRouter();
+const authStore = useAuthStore();
+
 const username = ref("");
 const password = ref("");
 const isLoading = ref(false);
@@ -90,27 +93,15 @@ const isLoading = ref(false);
 const handleLogin = async () => {
   isLoading.value = true;
   try {
-    const res = await fetch("http://localhost:3000/login", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        username: username.value,
-        password: password.value,
-      }),
-    });
+    const success = await authStore.login(username.value, password.value);
 
-    const data = await res.json();
-
-    if (data.success) {
-      // Simpan data user ke Local Storage browser
-      localStorage.setItem("user", JSON.stringify(data.user));
-      // Arahkan ke Dashboard
+    if (success) {
       router.push("/dashboard");
     } else {
-      alert(data.error);
+      alert(authStore.error || "Login gagal.");
     }
   } catch (error) {
-    alert("Gagal terhubung ke server.");
+    alert("Terjadi kesalahan sistem.");
   } finally {
     isLoading.value = false;
   }

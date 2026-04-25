@@ -5,17 +5,17 @@
     >
       <div class="flex-1 flex flex-col gap-6 w-full">
         <div
-          class="bg-white rounded-3xl p-6 shadow-sm border border-[#f0ce97] border-opacity-50 flex flex-col md:flex-row gap-6 items-center justify-between relative overflow-hidden"
+          class="glass-card rounded-3xl p-6 shadow-md border border-white/50 flex flex-col md:flex-row gap-6 items-center justify-between relative overflow-hidden animate-fade-in-up"
         >
           <div
-            class="absolute -left-6 -top-6 bg-[#fdf5e6] w-24 h-24 rounded-full opacity-50 pointer-events-none"
+            class="absolute -left-6 -top-6 bg-[#fdf5e6] w-24 h-24 rounded-full opacity-50 pointer-events-none animate-float"
           ></div>
 
           <div class="relative z-10 w-full md:w-1/3">
-            <h1 class="text-2xl font-extrabold text-[#4a2f1d] tracking-tight">
+            <h1 class="text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-[#4a2f1d] to-[#8b5a33] tracking-tight">
               Kasir Rider <span class="text-[#c28147]">POS</span>
             </h1>
-            <p class="text-xs text-[#8b5a33] mt-1 font-medium">
+            <p class="text-sm text-[#8b5a33] mt-1 font-semibold">
               Catat serah terima dan penjualan harian rider.
             </p>
           </div>
@@ -25,14 +25,14 @@
           >
             <div class="flex-1">
               <label
-                class="block text-xs font-bold text-gray-500 uppercase mb-1.5 pl-1"
+                class="block text-xs font-bold text-gray-500 uppercase mb-1.5 pl-1 tracking-wider"
                 >Nama Rider</label
               >
               <div class="relative">
                 <select
                   v-model="namaRider"
                   :disabled="isRiderLocked"
-                  class="w-full bg-[#fdf8f2] border border-[#e8d5c4] text-[#4a2f1d] rounded-xl pl-4 pr-4 py-3 focus:outline-none focus:ring-2 focus:ring-[#c28147] transition-all font-bold appearance-none disabled:bg-gray-100"
+                  class="w-full bg-[#fdf8f2] border border-[#e8d5c4] text-[#4a2f1d] rounded-xl pl-4 pr-4 py-3 focus:outline-none focus:ring-2 focus:ring-[#c28147] transition-all font-bold appearance-none disabled:bg-gray-100 shadow-sm"
                 >
                   <option value="" disabled selected>Pilih Rider...</option>
                   <option
@@ -47,13 +47,13 @@
             </div>
             <div class="flex-1">
               <label
-                class="block text-xs font-bold text-gray-500 uppercase mb-1.5 pl-1"
+                class="block text-xs font-bold text-gray-500 uppercase mb-1.5 pl-1 tracking-wider"
                 >Tanggal</label
               >
               <input
                 type="date"
                 v-model="tanggalInput"
-                class="w-full bg-[#fdf8f2] border border-[#e8d5c4] text-[#4a2f1d] rounded-xl px-4 py-3 focus:outline-none font-bold"
+                class="w-full bg-[#fdf8f2] border border-[#e8d5c4] text-[#4a2f1d] rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[#c28147] transition-all font-bold shadow-sm"
               />
             </div>
           </div>
@@ -73,10 +73,11 @@
             v-else
             v-for="(item, index) in listProduk"
             :key="index"
-            class="bg-white rounded-2xl p-5 shadow-sm border border-[#f0ce97]/50 hover:shadow-md transition-all duration-300 flex flex-col xl:flex-row justify-between items-start xl:items-center gap-6"
+            class="glass-card rounded-2xl p-5 hover:shadow-lg transition-all duration-300 flex flex-col xl:flex-row justify-between items-start xl:items-center gap-6 animate-fade-in-up"
+            :style="`animation-delay: ${index * 0.05}s`"
           >
             <div class="w-full xl:w-1/3">
-              <h3 class="font-extrabold text-lg text-[#4a2f1d]">
+              <h3 class="font-black text-xl text-[#4a2f1d] mb-1">
                 {{ item.nama_produk }}
               </h3>
               <span
@@ -90,41 +91,41 @@
               <div class="grid grid-cols-4 gap-3">
                 <div class="flex flex-col items-center">
                   <label
-                    class="text-[10px] font-extrabold text-gray-400 uppercase mb-1.5"
+                    class="text-[10px] font-black text-gray-400 uppercase mb-1.5 tracking-wide"
                     >1. Ambil</label
                   >
                   <input
                     type="number"
                     v-model="item.diambil"
-                    class="w-full text-center rounded-xl py-2 bg-[#fdf8f2] border border-[#e8d5c4] font-bold"
+                    class="w-full text-center rounded-xl py-2 bg-[#fdf8f2] border border-[#e8d5c4] focus:ring-2 focus:ring-[#c28147] focus:outline-none transition-all font-bold text-lg"
                   />
                 </div>
                 <div class="flex flex-col items-center">
                   <label
-                    class="text-[10px] font-extrabold text-[#c28147] uppercase mb-1.5"
+                    class="text-[10px] font-black text-[#c28147] uppercase mb-1.5 tracking-wide"
                     >2. Dibawa</label
                   >
                   <input
                     type="number"
                     :value="item.stok_bawa || 0"
                     disabled
-                    class="w-full text-center bg-[#fdf5e6] border border-[#e5b976]/50 text-[#c28147] font-extrabold rounded-xl py-2"
+                    class="w-full text-center bg-[#fdf5e6] border border-[#e5b976]/50 text-[#c28147] font-black rounded-xl py-2 text-xl"
                   />
                 </div>
                 <div class="flex flex-col items-center">
                   <label
-                    class="text-[10px] font-extrabold text-gray-400 uppercase mb-1.5"
+                    class="text-[10px] font-black text-gray-400 uppercase mb-1.5 tracking-wide"
                     >3. Terjual</label
                   >
                   <input
                     type="number"
                     v-model="item.terjual_input"
-                    class="w-full text-center bg-[#fdf8f2] border border-[#e8d5c4] text-green-700 rounded-xl py-2 font-extrabold"
+                    class="w-full text-center bg-[#fdf8f2] border border-[#e8d5c4] focus:ring-2 focus:ring-green-500 focus:outline-none transition-all text-green-700 rounded-xl py-2 font-black text-xl"
                   />
                 </div>
                 <div class="flex flex-col items-center">
                   <label
-                    class="text-[10px] font-extrabold text-[#8b5a33] uppercase mb-1.5"
+                    class="text-[10px] font-black text-[#8b5a33] uppercase mb-1.5 tracking-wide"
                     >4. Sisa</label
                   >
                   <input
@@ -137,20 +138,20 @@
                       )
                     "
                     disabled
-                    class="w-full text-center bg-[#8b5a33] border border-[#5c3a21] text-white font-extrabold rounded-xl py-2"
+                    class="w-full text-center bg-gradient-to-b from-[#8b5a33] to-[#5c3a21] border border-[#5c3a21] text-white font-black rounded-xl py-2 text-xl shadow-inner"
                   />
                 </div>
               </div>
-              <div class="flex justify-end gap-2">
+              <div class="flex justify-end gap-2 mt-1">
                 <button
                   @click="konfirmasiAmbil(item)"
-                  class="bg-[#f4e8d8] text-[#8b5a33] text-xs font-bold py-1.5 px-4 rounded-lg"
+                  class="bg-[#f4e8d8] hover:bg-[#e5b976] text-[#8b5a33] hover:text-white transition-colors text-xs font-bold py-1.5 px-4 rounded-lg shadow-sm"
                 >
                   Ambil
                 </button>
                 <button
                   @click="kembalikanSisa(item)"
-                  class="bg-white text-red-500 border border-gray-200 text-xs font-bold py-1.5 px-4 rounded-lg"
+                  class="bg-white hover:bg-red-50 text-red-500 border border-red-200 transition-colors text-xs font-bold py-1.5 px-4 rounded-lg shadow-sm"
                 >
                   Kembalikan
                 </button>
@@ -164,7 +165,7 @@
         <button
           @click="simpanPenjualanMasal"
           :disabled="isLoading || !namaRider"
-          class="w-full bg-gradient-to-r from-[#8b5a33] to-[#5c3a21] text-white font-extrabold tracking-widest py-5 px-6 rounded-3xl shadow-lg hover:shadow-xl transition-all uppercase text-sm flex items-center justify-center gap-3 transform hover:-translate-y-1"
+          class="w-full btn-primary py-5 px-6 rounded-3xl tracking-widest uppercase text-sm flex items-center justify-center gap-3 animate-fade-in-up" style="animation-delay: 0.3s;"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -274,6 +275,7 @@
 <script setup>
 import { ref, onMounted, watch } from "vue";
 import Swal from "sweetalert2";
+import apiClient from "../services/axios";
 
 // AMBIL ID CABANG DARI LOCALSTORAGE
 const getUserData = () => {
@@ -312,11 +314,8 @@ watch([namaRider, tanggalInput], () => {
 
 const ambilDataRider = async () => {
   try {
-    // Tambahkan id_cabang ke parameter agar kasir hanya melihat rider cabangnya saja
-    const res = await fetch(
-      `http://localhost:3000/list-rider?id_cabang=${idCabang}`,
-    );
-    listRider.value = await res.json();
+    const res = await apiClient.get(`/list-rider?id_cabang=${idCabang}`);
+    listRider.value = res.data;
   } catch (err) {
     console.error(err);
   }
@@ -324,16 +323,12 @@ const ambilDataRider = async () => {
 
 const ambilDataGabungan = async () => {
   try {
-    const resKulkas = await fetch(
-      `http://localhost:3000/list-produk-tersedia?id_cabang=${idCabang}`,
-    );
-    const dataKulkas = await resKulkas.json();
+    const resKulkas = await apiClient.get(`/list-produk-tersedia?id_cabang=${idCabang}`);
+    const dataKulkas = resKulkas.data;
     let dataBox = [];
     if (namaRider.value) {
-      const resBox = await fetch(
-        `http://localhost:3000/rider/box?nama_rider=${namaRider.value}&tanggal=${tanggalInput.value}&id_cabang=${idCabang}`,
-      );
-      if (resBox.ok) dataBox = await resBox.json();
+      const resBox = await apiClient.get(`/rider/box?nama_rider=${namaRider.value}&tanggal=${tanggalInput.value}&id_cabang=${idCabang}`);
+      dataBox = resBox.data;
     }
     listProduk.value = dataKulkas.map((item) => {
       const diBox = dataBox.find((b) => b.nama_produk === item.nama_produk);
@@ -352,11 +347,8 @@ const ambilDataGabungan = async () => {
 
 const ambilRiwayatHariIni = async () => {
   try {
-    // Tambahkan id_cabang ke parameter
-    const res = await fetch(
-      `http://localhost:3000/riwayat-hari-ini?id_cabang=${idCabang}`,
-    );
-    riwayatSesi.value = await res.json();
+    const res = await apiClient.get(`/riwayat-hari-ini?id_cabang=${idCabang}`);
+    riwayatSesi.value = res.data;
   } catch (err) {
     console.error(err);
   }
@@ -367,24 +359,19 @@ const konfirmasiAmbil = async (item) => {
     return Swal.fire("Peringatan", "Pilih Rider!", "warning");
   isLoading.value = true;
   try {
-    const res = await fetch("http://localhost:3000/rider/ambil-kulkas", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        id_cabang: idCabang, // Kirim ID Cabang
-        nama_rider: namaRider.value,
-        tanggal: tanggalInput.value,
-        nama_produk: item.nama_produk,
-        jumlah_diambil: item.diambil,
-      }),
+    await apiClient.post("/rider/ambil-kulkas", {
+      id_cabang: idCabang,
+      nama_rider: namaRider.value,
+      tanggal: tanggalInput.value,
+      nama_produk: item.nama_produk,
+      jumlah_diambil: item.diambil,
     });
-    if (res.ok) {
-      item.diambil = null;
-      Toast.fire({ icon: "success", title: "Berhasil mengambil stok" });
-      ambilDataGabungan();
-    }
+    item.diambil = null;
+    Toast.fire({ icon: "success", title: "Berhasil mengambil stok" });
+    ambilDataGabungan();
   } catch (err) {
     console.error(err);
+    Swal.fire("Error", err.response?.data?.error || "Gagal mengambil stok", "error");
   } finally {
     isLoading.value = false;
   }
@@ -399,20 +386,18 @@ const kembalikanSisa = async (item) => {
   if (!result.isConfirmed) return;
   isLoading.value = true;
   try {
-    await fetch("http://localhost:3000/rider/kembalikan-stok", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        id_cabang: idCabang, // Kirim ID Cabang
-        nama_rider: namaRider.value,
-        tanggal: tanggalInput.value,
-        nama_produk: item.nama_produk,
-        jumlah_dikembalikan: item.stok_bawa,
-      }),
+    await apiClient.post("/rider/kembalikan-stok", {
+      id_cabang: idCabang,
+      nama_rider: namaRider.value,
+      tanggal: tanggalInput.value,
+      nama_produk: item.nama_produk,
+      jumlah_dikembalikan: item.stok_bawa,
     });
     ambilDataGabungan();
+    Toast.fire({ icon: "success", title: "Stok dikembalikan" });
   } catch (err) {
     console.error(err);
+    Swal.fire("Error", err.response?.data?.error || "Gagal mengembalikan stok", "error");
   } finally {
     isLoading.value = false;
   }
@@ -426,17 +411,20 @@ const simpanPenjualanMasal = async () => {
     return Swal.fire("Info", "Isi kolom terjual!", "info");
   isLoading.value = true;
   for (const item of itemTerpilih) {
-    await fetch("http://localhost:3000/rider/catat-laku", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        id_cabang: idCabang, // Kirim ID Cabang
+    try {
+      await apiClient.post("/rider/catat-laku", {
+        id_cabang: idCabang,
         nama_rider: namaRider.value,
         tanggal: tanggalInput.value,
         nama_produk: item.nama_produk,
         terjual: item.terjual_input,
-      }),
-    });
+      });
+    } catch (err) {
+      console.error(err);
+      Swal.fire("Error", err.response?.data?.error || "Gagal mencatat transaksi", "error");
+      isLoading.value = false;
+      return;
+    }
   }
   Swal.fire("Berhasil", "Data tersimpan", "success");
   ambilDataGabungan();

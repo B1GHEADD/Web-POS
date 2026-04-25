@@ -52,29 +52,27 @@ const router = createRouter({
 // ==========================================
 // SATPAM PENJAGA ROUTE (NAVIGATION GUARD)
 // ==========================================
+import { useAuthStore } from "../stores/auth";
+
 router.beforeEach((to, from, next) => {
-  // Ambil data user dari penyimpanan browser
-  const userData = localStorage.getItem("user");
-  const user = userData ? JSON.parse(userData) : null;
+  // Ambil data user dari Pinia Store
+  const authStore = useAuthStore();
+  const isAuthenticated = authStore.isAuthenticated;
+  const user = authStore.user;
 
   // 1. Jika BELUM login, dan mencoba akses halaman selain Login (/), tendang ke Login!
-  if (!user && to.path !== "/") {
+  if (!isAuthenticated && to.path !== "/") {
     return next("/");
   }
 
   // 2. Jika SUDAH login, tapi iseng buka halaman Login (/), arahkan ke Dashboard
-  if (user && to.path === "/") {
+  if (isAuthenticated && to.path === "/") {
     return next("/dashboard");
   }
 
   // 3. PEMBATASAN BERDASARKAN ROLE & CABANG
-  if (user) {
-    // Kita anggap null, undefined, atau string kosong sebagai Super Admin agar lebih kebal
-    const isSuperAdmin =
-      user.role === "admin" &&
-      (user.id_cabang === null ||
-        user.id_cabang === undefined ||
-        user.id_cabang === "");
+  if (isAuthenticated && user) {
+    const isSuperAdmin = authStore.isSuperAdmin;
 
     // --- ROLE SUPER ADMIN PUSAT ---
     if (isSuperAdmin) {

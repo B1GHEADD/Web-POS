@@ -109,9 +109,21 @@
       <div
         class="bg-[#fffbf7] rounded-3xl p-6 shadow-sm border border-[#f0ce97] border-opacity-40 overflow-hidden"
       >
-        <h2 class="text-lg font-bold text-[#4a2f1d] mb-4">
-          Detail Ketersediaan & Expired Bahan Baku
-        </h2>
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-4">
+          <h2 class="text-lg font-bold text-[#4a2f1d]">
+            Detail Ketersediaan & Expired Bahan Baku
+          </h2>
+          <div class="flex gap-2 w-full sm:w-auto">
+            <button @click="exportExcel" class="flex-1 sm:flex-none btn-outline py-2 px-4 rounded-lg flex items-center justify-center gap-2">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+              Excel
+            </button>
+            <button @click="exportPDF" class="flex-1 sm:flex-none btn-primary py-2 px-4 rounded-lg flex items-center justify-center gap-2">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" /></svg>
+              Cetak PDF
+            </button>
+          </div>
+        </div>
         <div
           class="overflow-x-auto rounded-xl border border-[#e5b976] shadow-sm"
         >
@@ -218,6 +230,10 @@
 <script setup>
 import { ref, onMounted, onUnmounted, watch } from "vue";
 import * as echarts from "echarts";
+import apiClient from "../services/axios";
+import jsPDF from "jspdf";
+import "jspdf-autotable";
+import * as XLSX from "xlsx";
 
 // --- MANAJEMEN ROLE & CABANG ---
 const getUserData = () => {
@@ -266,10 +282,8 @@ watch(activeCabang, () => {
 // --- FUNGSI FETCH ---
 const ambilDataBahan = async () => {
   try {
-    const response = await fetch(
-      `http://localhost:3000/laporan/produksi?id_cabang=${activeCabang.value}`,
-    );
-    if (response.ok) listBahanBaku.value = await response.json();
+    const response = await apiClient.get(`/produksi?id_cabang=${activeCabang.value}`);
+    listBahanBaku.value = response.data;
   } catch (error) {
     console.error("Gagal mengambil laporan bahan baku:", error);
   }
@@ -277,10 +291,8 @@ const ambilDataBahan = async () => {
 
 const ambilTopMenu = async () => {
   try {
-    const response = await fetch(
-      `http://localhost:3000/laporan/top-menu?id_cabang=${activeCabang.value}`,
-    );
-    if (response.ok) topMenu.value = await response.json();
+    const response = await apiClient.get(`/top-menu?id_cabang=${activeCabang.value}`);
+    topMenu.value = response.data;
   } catch (error) {
     console.error("Gagal mengambil data top menu:", error);
   }
@@ -288,10 +300,8 @@ const ambilTopMenu = async () => {
 
 const gambarGrafik = async () => {
   try {
-    const response = await fetch(
-      `http://localhost:3000/laporan/grafik?id_cabang=${activeCabang.value}`,
-    );
-    const dataDariBackend = await response.json();
+    const response = await apiClient.get(`/grafik?id_cabang=${activeCabang.value}`);
+    const dataDariBackend = response.data;
 
     if (myChart) myChart.dispose();
     myChart = echarts.init(grafikDOM.value);
@@ -378,6 +388,64 @@ const gambarGrafik = async () => {
   } catch (error) {
     console.error("Gagal memuat data grafik:", error);
   }
+};
+
+// --- FUNGSI EKSPOR PDF ---
+const exportPDF = () => {
+  if (listBahanBaku.value.length === 0) return alert("Tidak ada data bahan baku untuk diekspor.");
+  
+  const doc = new jsPDF();
+  const title = "Laporan Bahan Baku - Kupi Kita";
+  doc.setFontSize(14);
+  doc.text(title, 14, 15);
+  doc.setFontSize(10);
+  doc.text(`Tanggal Cetak: ${new Date().toLocaleDateString('id-ID')}`, 14, 22);
+
+  const tableColumn = ["Cabang", "Nama Bahan", "Sisa Stok", "Satuan", "Tgl Expired", "Status"];
+  const tableRows = [];
+
+  listBahanBaku.value.forEach(bahan => {
+    const data = [
+      getNamaCabang(bahan.id_cabang),
+      bahan.nama_bahan,
+      bahan.stok_saat_ini.toLocaleString("id-ID"),
+      bahan.satuan,
+      bahan.tgl_format,
+      bahan.status
+    ];
+    tableRows.push(data);
+  });
+
+  doc.autoTable({
+    head: [tableColumn],
+    body: tableRows,
+    startY: 28,
+    theme: 'grid',
+    styles: { fontSize: 9, font: 'helvetica' },
+    headStyles: { fillColor: [92, 58, 33] } 
+  });
+
+  doc.save("Laporan_BahanBaku_KupiKita.pdf");
+};
+
+// --- FUNGSI EKSPOR EXCEL ---
+const exportExcel = () => {
+  if (listBahanBaku.value.length === 0) return alert("Tidak ada data bahan baku untuk diekspor.");
+  
+  const dataToExport = listBahanBaku.value.map(bahan => ({
+    "Cabang": getNamaCabang(bahan.id_cabang),
+    "Nama Bahan": bahan.nama_bahan,
+    "Sisa Stok": bahan.stok_saat_ini,
+    "Satuan": bahan.satuan,
+    "Tgl Expired": bahan.tgl_format,
+    "Status": bahan.status
+  }));
+
+  const worksheet = XLSX.utils.json_to_sheet(dataToExport);
+  const workbook = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(workbook, worksheet, "Data Bahan Baku");
+
+  XLSX.writeFile(workbook, "Laporan_BahanBaku_KupiKita.xlsx");
 };
 
 const refreshSemuaData = () => {

@@ -71,12 +71,12 @@
 
       <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div
-          class="bg-gradient-to-br from-[#8b5a33] to-[#5c3a21] rounded-2xl p-6 shadow-md text-white flex flex-col justify-between h-36 relative overflow-hidden transition-transform hover:-translate-y-1"
+          class="bg-gradient-to-br from-[#8b5a33] via-[#6b4226] to-[#4a2f1d] rounded-2xl p-6 shadow-lg text-white flex flex-col justify-between h-36 relative overflow-hidden transition-all duration-300 hover:shadow-2xl hover:-translate-y-1.5 animate-fade-in-up"
         >
-          <div class="absolute -right-4 -bottom-4 opacity-20">
+          <div class="absolute -right-4 -bottom-4 opacity-10 transform rotate-12 scale-150">
             <svg
               xmlns="http://www.w3.org/2000/svg"
-              class="h-28 w-28"
+              class="h-32 w-32"
               fill="none"
               viewBox="0 0 24 24"
               stroke="currentColor"
@@ -89,35 +89,35 @@
               />
             </svg>
           </div>
-          <p class="text-sm font-medium text-[#e5b976] z-10">
+          <p class="text-sm font-bold text-[#f0ce97] z-10 uppercase tracking-widest drop-shadow-md">
             Total Omset (Hari Ini)
           </p>
-          <h3 class="text-3xl font-extrabold z-10">
+          <h3 class="text-4xl font-black z-10 drop-shadow-lg tracking-tight">
             {{ formatRupiah(kpi.omset) }}
           </h3>
         </div>
 
         <div
-          class="bg-white border border-[#e5b976] rounded-2xl p-6 shadow-sm flex flex-col justify-between h-36 transition-transform hover:-translate-y-1"
+          class="glass-card rounded-2xl p-6 flex flex-col justify-between h-36 transition-all duration-300 hover:shadow-xl hover:-translate-y-1.5 animate-fade-in-up" style="animation-delay: 0.1s;"
         >
-          <p class="text-sm font-bold text-gray-500">Cup Terjual (Hari Ini)</p>
+          <p class="text-sm font-bold text-gray-500 uppercase tracking-wider">Cup Terjual (Hari Ini)</p>
           <div class="flex items-end gap-2">
-            <h3 class="text-4xl font-extrabold text-[#c28147]">
+            <h3 class="text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-[#c28147] to-[#8b5a33]">
               {{ kpi.terjual }}
             </h3>
-            <span class="text-sm text-gray-400 font-medium mb-1">Cup</span>
+            <span class="text-sm text-[#8b5a33] font-bold mb-1.5">Cup</span>
           </div>
         </div>
 
         <div
-          class="bg-white border border-[#e5b976] rounded-2xl p-6 shadow-sm flex flex-col justify-between h-36 transition-transform hover:-translate-y-1"
+          class="glass-card rounded-2xl p-6 flex flex-col justify-between h-36 transition-all duration-300 hover:shadow-xl hover:-translate-y-1.5 animate-fade-in-up" style="animation-delay: 0.2s;"
         >
-          <p class="text-sm font-bold text-gray-500">Stok Kopi Siap Jual</p>
+          <p class="text-sm font-bold text-gray-500 uppercase tracking-wider">Stok Kopi Siap Jual</p>
           <div class="flex items-end gap-2">
-            <h3 class="text-4xl font-extrabold text-[#4a2f1d]">
+            <h3 class="text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-[#4a2f1d] to-[#8b5a33]">
               {{ kpi.stokKulkas }}
             </h3>
-            <span class="text-sm text-gray-400 font-medium mb-1"
+            <span class="text-sm text-[#8b5a33] font-bold mb-1.5"
               >Cup di Kulkas</span
             >
           </div>
@@ -316,6 +316,7 @@
 <script setup>
 import { ref, onMounted, onUnmounted, watch } from "vue";
 import * as echarts from "echarts";
+import apiClient from "../services/axios";
 
 // --- MANAJEMEN ROLE & CABANG ---
 const getUserData = () => {
@@ -399,41 +400,39 @@ const renderChart = () => {
 
 // --- FETCH DATA (DENGAN FILTER CABANG) ---
 const fetchKPI = async () => {
-  const res = await fetch(
-    `http://localhost:3000/dashboard/kpi?id_cabang=${activeCabang.value}`,
-  );
-  if (res.ok) kpi.value = await res.json();
+  try {
+    const res = await apiClient.get(`/dashboard/kpi?id_cabang=${activeCabang.value}`);
+    kpi.value = res.data;
+  } catch (error) { console.error("Error fetching KPI", error); }
 };
 
 const fetchGrafik = async () => {
-  const res = await fetch(
-    `http://localhost:3000/dashboard/grafik-tren?id_cabang=${activeCabang.value}`,
-  );
-  if (res.ok) {
-    dataGrafik.value = await res.json();
+  try {
+    const res = await apiClient.get(`/dashboard/grafik-tren?id_cabang=${activeCabang.value}`);
+    dataGrafik.value = res.data;
     renderChart();
-  }
+  } catch (error) { console.error("Error fetching grafik", error); }
 };
 
 const fetchStokKritis = async () => {
-  const res = await fetch(
-    `http://localhost:3000/dashboard/stok-kritis?id_cabang=${activeCabang.value}`,
-  );
-  if (res.ok) stokKritis.value = await res.json();
+  try {
+    const res = await apiClient.get(`/dashboard/stok-kritis?id_cabang=${activeCabang.value}`);
+    stokKritis.value = res.data;
+  } catch (error) { console.error("Error fetching stok kritis", error); }
 };
 
 const fetchExpired = async () => {
-  const res = await fetch(
-    `http://localhost:3000/dashboard/expired?id_cabang=${activeCabang.value}`,
-  );
-  if (res.ok) peringatanExpired.value = await res.json();
+  try {
+    const res = await apiClient.get(`/dashboard/expired?id_cabang=${activeCabang.value}`);
+    peringatanExpired.value = res.data;
+  } catch (error) { console.error("Error fetching expired", error); }
 };
 
 const fetchLiveTracking = async () => {
-  const res = await fetch(
-    `http://localhost:3000/dashboard/live-rider?id_cabang=${activeCabang.value}`,
-  );
-  if (res.ok) liveTracking.value = await res.json();
+  try {
+    const res = await apiClient.get(`/dashboard/live-rider?id_cabang=${activeCabang.value}`);
+    liveTracking.value = res.data;
+  } catch (error) { console.error("Error fetching live tracking", error); }
 };
 
 const refreshSemua = () => {

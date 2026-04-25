@@ -307,6 +307,7 @@
 <script setup>
 import { ref, computed, onMounted } from "vue";
 import Swal from "sweetalert2";
+import apiClient from "../services/axios";
 
 // AMBIL ID CABANG DARI LOCALSTORAGE
 const getUserData = () => {
@@ -366,10 +367,8 @@ const tanggalExpired = computed(() => {
 // ==========================================
 const ambilDataMenu = async () => {
   try {
-    // Menu produk bersifat global, tidak perlu id_cabang
-    const res = await fetch("http://localhost:3000/list-menu-produksi");
-    const data = await res.json();
-    listMenu.value = data;
+    const res = await apiClient.get("/list-menu-produksi");
+    listMenu.value = res.data;
   } catch (err) {
     console.error("Gagal menarik data menu:", err);
   }
@@ -377,12 +376,8 @@ const ambilDataMenu = async () => {
 
 const ambilDataBahan = async () => {
   try {
-    // Tambahkan parameter id_cabang untuk mengambil bahan baku milik cabang ini saja
-    const res = await fetch(
-      `http://localhost:3000/list-bahan-baku?id_cabang=${idCabang}`,
-    );
-    const data = await res.json();
-    listBahan.value = data;
+    const res = await apiClient.get(`/list-bahan-baku?id_cabang=${idCabang}`);
+    listBahan.value = res.data;
   } catch (err) {
     console.error("Gagal menarik data bahan baku:", err);
   }
@@ -422,49 +417,35 @@ const simpanRestock = async () => {
   isRestockLoading.value = true;
 
   try {
-    const response = await fetch("http://localhost:3000/restock-bahan", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        id_cabang: idCabang, // Kirim ID Cabang ke backend
-        tanggal_input: tanggalInputBahan.value,
-        nama_bahan: namaBahanMasuk.value,
-        jumlah_masuk: jumlahBahanMasuk.value,
-        satuan: satuanBahanMasuk.value,
-        harga_total: hargaBahanMasuk.value,
-        tanggal_expired: expiredBahanMasuk.value,
-      }),
+    const response = await apiClient.post("/restock-bahan", {
+      id_cabang: idCabang,
+      tanggal_input: tanggalInputBahan.value,
+      nama_bahan: namaBahanMasuk.value,
+      jumlah_masuk: jumlahBahanMasuk.value,
+      satuan: satuanBahanMasuk.value,
+      harga_total: hargaBahanMasuk.value,
+      tanggal_expired: expiredBahanMasuk.value,
     });
 
-    const hasil = await response.json();
-
-    if (response.ok) {
-      Swal.fire({
-        icon: "success",
-        title: "Berhasil!",
-        text: `Stok ${namaBahanMasuk.value} telah ditambahkan ke gudang.`,
-        confirmButtonColor: "#c28147",
-      });
-      // Reset Form
-      namaBahanMasuk.value = "";
-      jumlahBahanMasuk.value = null;
-      satuanBahanMasuk.value = "";
-      hargaBahanMasuk.value = null;
-      expiredBahanMasuk.value = "";
-    } else {
-      Swal.fire({
-        icon: "error",
-        title: "Gagal",
-        text: hasil.error || "Gagal memperbarui database",
-        confirmButtonColor: "#c28147",
-      });
-    }
+    Swal.fire({
+      icon: "success",
+      title: "Berhasil!",
+      text: `Stok ${namaBahanMasuk.value} telah ditambahkan ke gudang.`,
+      confirmButtonColor: "#c28147",
+    });
+    // Reset Form
+    namaBahanMasuk.value = "";
+    jumlahBahanMasuk.value = null;
+    satuanBahanMasuk.value = "";
+    hargaBahanMasuk.value = null;
+    expiredBahanMasuk.value = "";
   } catch (error) {
     console.error("Error simpan restock:", error);
     Swal.fire({
       icon: "error",
-      title: "Kesalahan Koneksi",
-      text: "Terjadi kesalahan koneksi ke server backend.",
+      title: "Gagal",
+      text: error.response?.data?.error || "Gagal memperbarui database",
+      confirmButtonColor: "#c28147",
     });
   } finally {
     isRestockLoading.value = false;
@@ -506,46 +487,34 @@ const simpanProduksi = async () => {
   isProduksiLoading.value = true;
 
   try {
-    const response = await fetch("http://localhost:3000/produksi-menu", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        id_cabang: idCabang, // Kirim ID Cabang ke backend
-        nama_produk: menuDibuat.value,
-        jumlah_produksi: jumlahProduksi.value,
-      }),
+    const response = await apiClient.post("/produksi-menu", {
+      id_cabang: idCabang,
+      nama_produk: menuDibuat.value,
+      jumlah_produksi: jumlahProduksi.value,
     });
 
-    const hasil = await response.json();
-
-    if (response.ok) {
-      Swal.fire({
-        icon: "success",
-        title: "Produksi Berhasil",
-        text: hasil.message || "Stok berhasil dipotong.",
-        confirmButtonColor: "#5c3a21",
-      });
-      menuDibuat.value = "";
-      jumlahProduksi.value = null;
-    } else {
-      let detailHtml = "";
-      if (hasil.detail && hasil.detail.length > 0) {
-        detailHtml = `<ul style="text-align: left; margin-top: 10px;">${hasil.detail.map((d) => `<li>• ${d}</li>`).join("")}</ul>`;
-      }
-
-      Swal.fire({
-        icon: "error",
-        title: "Produksi Gagal",
-        html: `<span>${hasil.error}</span>${detailHtml}`,
-        confirmButtonColor: "#5c3a21",
-      });
-    }
+    Swal.fire({
+      icon: "success",
+      title: "Produksi Berhasil",
+      text: response.data.message || "Stok berhasil dipotong.",
+      confirmButtonColor: "#5c3a21",
+    });
+    menuDibuat.value = "";
+    jumlahProduksi.value = null;
   } catch (error) {
     console.error("Error saat simpan produksi:", error);
+    const errData = error.response?.data;
+    
+    let detailHtml = "";
+    if (errData?.detail && errData.detail.length > 0) {
+      detailHtml = `<ul style="text-align: left; margin-top: 10px;">${errData.detail.map((d) => `<li>• ${d}</li>`).join("")}</ul>`;
+    }
+
     Swal.fire({
       icon: "error",
-      title: "Kesalahan Server",
-      text: "Terjadi kesalahan koneksi ke server backend.",
+      title: "Produksi Gagal",
+      html: `<span>${errData?.error || "Kesalahan Server"}</span>${detailHtml}`,
+      confirmButtonColor: "#5c3a21",
     });
   } finally {
     isProduksiLoading.value = false;

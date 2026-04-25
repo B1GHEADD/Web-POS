@@ -160,9 +160,21 @@
       <div
         class="bg-[#fffbf7] rounded-2xl p-6 shadow-sm border border-[#f0ce97] border-opacity-40"
       >
-        <h2 class="text-lg font-bold text-[#4a2f1d] mb-4">
-          Rekap Penjualan Rider (Harian)
-        </h2>
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-4">
+          <h2 class="text-lg font-bold text-[#4a2f1d]">
+            Rekap Penjualan Rider (Harian)
+          </h2>
+          <div class="flex gap-2 w-full sm:w-auto">
+            <button @click="exportExcel" class="flex-1 sm:flex-none btn-outline py-2 px-4 rounded-lg flex items-center justify-center gap-2">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+              Excel
+            </button>
+            <button @click="exportPDF" class="flex-1 sm:flex-none btn-primary py-2 px-4 rounded-lg flex items-center justify-center gap-2">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" /></svg>
+              Cetak PDF
+            </button>
+          </div>
+        </div>
 
         <div
           class="overflow-x-auto rounded-xl border border-[#e5b976] shadow-sm"
@@ -233,6 +245,10 @@
 
 <script setup>
 import { ref, onMounted, watch } from "vue";
+import apiClient from "../services/axios";
+import jsPDF from "jspdf";
+import "jspdf-autotable";
+import * as XLSX from "xlsx";
 
 // --- MANAJEMEN ROLE & CABANG ---
 const getUserData = () => {
@@ -278,10 +294,8 @@ const formatRupiah = (angka) => {
 // --- FUNGSI FETCH API (DENGAN FILTER CABANG) ---
 const fetchTopMenu = async () => {
   try {
-    const res = await fetch(
-      `http://localhost:3000/laporan/top-menu?id_cabang=${activeCabang.value}`,
-    );
-    if (res.ok) topMenu.value = await res.json();
+    const res = await apiClient.get(`/top-menu?id_cabang=${activeCabang.value}`);
+    topMenu.value = res.data;
   } catch (err) {
     console.error(err);
   }
@@ -289,10 +303,8 @@ const fetchTopMenu = async () => {
 
 const fetchKlasemenRider = async () => {
   try {
-    const res = await fetch(
-      `http://localhost:3000/laporan-penjualan/leaderboard?id_cabang=${activeCabang.value}`,
-    );
-    if (res.ok) klasemenRider.value = await res.json();
+    const res = await apiClient.get(`/penjualan/leaderboard?id_cabang=${activeCabang.value}`);
+    klasemenRider.value = res.data;
   } catch (err) {
     console.error(err);
   }
@@ -300,13 +312,68 @@ const fetchKlasemenRider = async () => {
 
 const fetchRiwayat = async () => {
   try {
-    const res = await fetch(
-      `http://localhost:3000/laporan-penjualan/riwayat?id_cabang=${activeCabang.value}`,
-    );
-    if (res.ok) riwayatTransaksi.value = await res.json();
+    const res = await apiClient.get(`/penjualan/riwayat?id_cabang=${activeCabang.value}`);
+    riwayatTransaksi.value = res.data;
   } catch (err) {
     console.error(err);
   }
+};
+
+// --- FUNGSI EKSPOR PDF ---
+const exportPDF = () => {
+  if (riwayatTransaksi.value.length === 0) return alert("Tidak ada data untuk diekspor.");
+  
+  const doc = new jsPDF();
+  const title = "Laporan Rekap Penjualan Rider - Kupi Kita";
+  doc.setFontSize(14);
+  doc.text(title, 14, 15);
+  doc.setFontSize(10);
+  doc.text(`Tanggal Cetak: ${new Date().toLocaleDateString('id-ID')}`, 14, 22);
+
+  const tableColumn = ["Tanggal", "Rider", "Produk", "Total Laku (Cup)", "Total Omset (Rp)"];
+  const tableRows = [];
+
+  riwayatTransaksi.value.forEach(log => {
+    const logData = [
+      log.waktu_format,
+      log.nama_rider,
+      log.nama_produk,
+      log.terjual,
+      formatRupiah(log.total_pendapatan)
+    ];
+    tableRows.push(logData);
+  });
+
+  doc.autoTable({
+    head: [tableColumn],
+    body: tableRows,
+    startY: 28,
+    theme: 'grid',
+    styles: { fontSize: 9, font: 'helvetica' },
+    headStyles: { fillColor: [92, 58, 33] } // #5c3a21
+  });
+
+  doc.save("Laporan_Penjualan_KupiKita.pdf");
+};
+
+// --- FUNGSI EKSPOR EXCEL ---
+const exportExcel = () => {
+  if (riwayatTransaksi.value.length === 0) return alert("Tidak ada data untuk diekspor.");
+  
+  // Format data untuk excel agar rapi
+  const dataToExport = riwayatTransaksi.value.map(log => ({
+    "Tanggal": log.waktu_format,
+    "Nama Rider": log.nama_rider,
+    "Produk Terjual": log.nama_produk,
+    "Jumlah (Cup)": log.terjual,
+    "Omset (Rp)": log.total_pendapatan // angka murni untuk mudah di-sum di excel
+  }));
+
+  const worksheet = XLSX.utils.json_to_sheet(dataToExport);
+  const workbook = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(workbook, worksheet, "Data Penjualan");
+
+  XLSX.writeFile(workbook, "Laporan_Penjualan_KupiKita.xlsx");
 };
 
 // --- REFRESH SEMUA DATA ---
